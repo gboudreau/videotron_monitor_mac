@@ -255,8 +255,12 @@ function loadUsage2(e, request, callback) {
         return;
     }
     
-	eval('apiResponse = (' + request.response + ');');
-	//console.log(apiResponse);
+	if (request.responseText) {
+		var response = request.responseText;
+	} else {
+		var response = request.response;
+	}
+	eval('apiResponse = (' + response + ');');
 	
 	for (var i=0; i<apiResponse.messages.length; i++) {
 	    if (apiResponse.messages[i].severity == 'error') {
