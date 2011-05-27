@@ -1,186 +1,359 @@
-/***********************************/
-// SAVING AND RETRIEVING PREFERENCES
-/***********************************/
+var maxTransferPackages = 90;
+var transferPackages = [5, 10, 15, 30, 35, 40, 60, 65, 90];
+var transferPackagesPrices = [5, 10, 15, 12.50, 17.50, 22.50, 25, 30, 37.50];
 
-// setup() is run when the body loads.  It checks to see if there is a preference for this widget
-// and if so, applies the preference to the widget.
-var username = '';
-var uiType = 'normal';
+// For preferences
+var userkey = '';
 var lang = 'en';
-var plans = new Array();
-var planId = 1;
-var transferPackages = new Array();
-var dataTransferPackagesBought = 0;
-var dataTransferPackagesBoughtWhen = null;
-var limitTotal = 30;
-var surchargePerGb = 7.95;
-var surchargeLimit = 50;
-var xml_request_2 = null;
-var new_version_available = false;
+var uiType = 'normal';
 var color_code_upload = false;
 
-function setup() {
-	if (window.widget) {
-		planId = widget.preferenceForKey(makeKey("planId"));
-		dataTransferPackagesBought = widget.preferenceForKey(makeKey("dataTransferPackagesBought"));
-		dataTransferPackagesBoughtWhen = widget.preferenceForKey(makeKey("dataTransferPackagesBoughtWhen"));
-		if (dataTransferPackagesBoughtWhen) {
-			dataTransferPackagesBoughtWhen = new Date(Date.parse(dataTransferPackagesBoughtWhen));
-		}
-		username = widget.preferenceForKey(makeKey("username"));
-		uiType = widget.preferenceForKey(makeKey("uiType"));
-		lang = widget.preferenceForKey(makeKey("lang"));
-		color_code_upload = widget.preferenceForKey(makeKey("colorCodeUpload"));
-	}
-	if (plans.length == 0) {
-		if (xml_request_2 != null) {
-			xml_request_2.abort();
-			xml_request_2 = null;
-		}
-		xml_request_2 = new XMLHttpRequest();
-		xml_request_2.onload = function(e) {completeSetup(e, xml_request_2);}
-		xml_request_2.overrideMimeType("text/xml");
-		xml_request_2.open("GET", "http://dataproxy.pommepause.com/videotron_usage-11.php?get_plans=1");
-		xml_request_2.setRequestHeader("Cache-Control", "no-cache");
-		xml_request_2.send(null);
-	} else {
-		completeSetup(null, null);
-	}
-}
+// From pommepause.com poke
+var new_version_available = false;
 
+// From selectedPlan
+var limitTotal = 50;
+var surchargePerGb = 4.50;
+var surchargeLimit = 50;
 
-function completeSetup(e, request) {
-	if (!lang || lang.length == 0) {
-		lang = 'en';
-	}
-	if (e != null) {
-		xml_request_2 = null;
-		if (!request.responseXML) {
-			$('ohnoes').innerHTML = t("Oh Noes! There's been an error.<br/>Response is not XML.");
-			$("ohnoes").style.display = "block";
-			$("loading").style.display = "none";
-			$('this_month_small_loader').style.display="none";
-			$('this_month_meter_1_small').style.marginTop = '';
-			$('this_month_loader').style.display="none";
-			$('this_month_meter_1').style.marginTop = '';
-			$('this_month_small').style.display = "none";
-			$('this_month').style.display = "none";
-			$('this_month_bandwidth').style.display = "none";
-			$("last_updated").style.display = "none";
-			last_updated = 0;
-			return;
-		} else {
-			// Get the top level <plans> element 
-			var plansXml = findChild(request.responseXML, 'plans');
-			if (!plansXml) {
-				$('ohnoes').innerHTML = t("Oh Noes! There's been an error.<br/>No 'plans' tag in response.");
-				$("ohnoes").style.display = "block";
-				$("loading").style.display = "none";
-				$('this_month_small_loader').style.display="none";
-				$('this_month_meter_1_small').style.marginTop = '';
-				$('this_month_loader').style.display="none";
-				$('this_month_meter_1').style.marginTop = '';
-				$('this_month_small').style.display = "none";
-				$('this_month').style.display = "none";
-				$('this_month_bandwidth').style.display = "none";
-				$("last_updated").style.display = "none";
-				last_updated = 0;
-				return;
-			}
-			
-			for (var item = plansXml.firstChild; item != null; item = item.nextSibling) {
-				if (item.nodeName == 'plan') {
-					var id = item.attributes.getNamedItem('id').value,
-					var name = findChild(item, 'name');
-					var limit_gb = findChild(item, 'limit_gb');
-					var surcharge_per_gb = findChild(item, 'surcharge_per_gb');
-					var surcharge_limit = findChild(item, 'surcharge_limit');
-					var p = new Object();
-					p.id = id;
-					p.name = name.firstChild.data;
-					p.limit_gb = limit_gb.firstChild.data;
-					p.surcharge_per_gb = surcharge_per_gb.firstChild.data;
-					if (surcharge_limit.firstChild) {
-						p.surcharge_limit = surcharge_limit.firstChild.data;
-					} else {
-						p.surcharge_limit = 999999;
-					}
-					$('plan').options[p.id] = new Option(t(p.name) + ' (' + p.limit_gb + t('GB') + ')', p.id);
-					plans.push(p);
-				}
-				if (item.nodeName == 'data_transfer_pkg') {
-					var amount = findChild(item, 'amount').firstChild.data;
-					$('transfer_packages').options[$('transfer_packages').options.length] = new Option(amount + ' ' + t('GB'), amount);
-					transferPackages.push(amount);
-				}
-			}
-		}
+// For AJAX request & response
+var xml_request = null;
+var last_updated = 0;
+var date_last_updated_data = new Date(); date_last_updated_data.setTime(0);
+var response = null;
+var load_usage_error = null;
+
+function reloadPrefs() {
+    if (window.widget) {
+    	userkey = widget.preferenceForKey(makeKey("userkey"));
+    	uiType = widget.preferenceForKey(makeKey("uiType"));
+    	lang = widget.preferenceForKey(makeKey("lang"));
+    	color_code_upload = widget.preferenceForKey(makeKey("colorCodeUpload"));
+    } else {
+        userkey = 'FFFFFF5F4DF3F8EA';
+    }
+
+	if (userkey && userkey.length > 0) {
+		$('#userkey').val(userkey);
 	}
 
-	if (typeof planId == 'undefined' || planId.length == 0 || planId < 0) {
-		limitTotal = widget.preferenceForKey(makeKey("limitTotal"));
-		if (!limitTotal || limitTotal.length == 0) {
-			planId = 1; // Default
-		} else {
-			for (var i=0; i<plans.length; i++) {
-				if (limitTotal == plans[i].limit_gb) {
-					planId = i;
-					break;
-				}
-			}
-		}
-	}
-	limitTotal = parseInt(plans[planId].limit_gb);
-	surchargePerGb = parseFloat(plans[planId].surcharge_per_gb);
-	surchargeLimit = parseFloat(plans[planId].surcharge_limit);
-	$('plan').selectedIndex = planId;
-
-	if (username && username.length > 0) {
-		$('username').value = username;
-	}
 	if (uiType && uiType.length > 0) {
 		if (uiType == "small") {
-			$("uiType").selectedIndex = 1;
+			$("#uiType")[0].selectedIndex = 1;
 		}
 	} else {
 		uiType = 'normal'; // Default
 	}
-	if (lang == "fr") {
-		$("lang").selectedIndex = 1;
+
+	if (!lang || lang.length == 0) {
+		lang = 'en';
 	}
+	if (lang == "fr") {
+		$("#lang")[0].selectedIndex = 1;
+	} else {
+	    $("#lang")[0].selectedIndex = 0;
+	}
+
 	if (color_code_upload) {
-		$("color_code_upload").checked = true;
+		$("#color_code_upload")[0].checked = true;
+	} else {
+	    $("#color_code_upload")[0].checked = false;
 	}
 
 	translate(); // Maybe language changed; need to re-translate strings if so.
 	changeUI(uiType);	// Maybe UI type changed; need to move/hide/show stuff if so.
 }
 
+function show() {
+	reloadPrefs();
+	
+	if (!userkey || userkey == null || userkey.length == 0) {
+		$('#loading').hide();
+		$('#needs_config').show();
+		return;
+	}
+
+	$("#ohnoes").hide();
+	$('#needs_config').hide();
+	if ($('#this_month').css('display') == 'none') {
+		$('#loading').css('top', '30px');
+		$('#loading').show();
+	} else {
+		$('#this_month_loader').show();
+		$('#this_month_meter_1').css('marginTop', '-5px');
+	}
+
+	loadUsage(function(response) {
+		if (response.load_usage_error) {
+			$('#ohnoes').html(t(response.load_usage_error));
+			$("#ohnoes").show();
+			$("#loading").hide();
+			$('#this_month_loader').hide();
+			$('#this_month_meter_1').css('marginTop', '');
+			$('#this_month').hide();
+			$('#this_month_bandwidth').hide();
+			$("#last_updated").hide();
+			setTimeout(show, 30000);
+			return;
+		}
+		
+		response = response.response;
+
+		if (response == null) {
+			setTimeout(show, 2000);
+			return;
+		}
+
+		limitTotal = parseInt(response.maxCombinedBytes/1024/1024/1024);
+		surchargeLimit = response.surchargeLimit;
+		surchargePerGb = response.surchargePerGb;
+		
+		$("#ohnoes").hide();
+
+		$("#loading").hide();
+		$('#this_month_loader').hide();
+		$('#this_month_meter_1').css('marginTop', '');
+		$("#last_updated").show();
+		$('#needs_config').hide();
+
+		$('#this_month_start').html('('+t('started')+' '+dateFormat(response.periodStartDate)+')');
+		var last_updated_date = new Date(response.usageTimestamp);
+		$('#this_month_end').html(dateFormat(last_updated_date, true));
+
+		var this_month_start = new Date(response.periodStartDate);
+		var next_month_start = new Date(response.periodEndDate); next_month_start.setDate(next_month_start.getDate()+1);
+		var now = new Date(response.usageTimestamp);
+
+		down = numberFormatGB(response.downloadedBytes, 'B');
+		up = numberFormatGB(response.uploadedBytes, 'B');
+		
+		$('#this_month_down').html((down < 1 ? '0' : '') + down.toFixed(2) + ' ' + t("GB"));
+		$('#this_month_up').html((up < 1 ? '0' : '') + up.toFixed(2) + ' ' + t("GB"));
+		$('#this_month_total').html((down + up < 1 ? '0' : '') + (down + up).toFixed(2) + ' ' + t("GB"));
+
+		$('#this_month').show();
+
+		checkLimits(down, up);
+
+		// Now bar(s)
+		var nowPercentage = (now.getTime()-this_month_start.getTime())/(next_month_start.getTime()-this_month_start.getTime());
+		var metersWidth = 361;
+		var nowPos = parseInt((nowPercentage*metersWidth).toFixed(0));
+		if (nowPos > (metersWidth)) { nowPos = metersWidth; }
+		$('#this_month_now_1').css('left', (29+nowPos)+'px');
+		var nowBandwidth = parseFloat((nowPercentage*limitTotal-down-up).toFixed(2));
+
+    	// 'Today is the $num_days day of your billing month.'
+    	var num_days = Math.floor((now.getTime()-this_month_start.getTime())/(24*60*60*1000))+1;
+    	num_days = parseInt(num_days.toFixed(0));
+
+		if (parseInt($('#this_month_meter_1_end').css('left').replace('px','')) <= 1+parseInt(nowPos) || num_days == 0) {
+			$('#this_month_now_1_img').attr('src', 'Images/now.gif');
+		} else {
+			$('#this_month_now_1_img').attr('src', 'Images/now_nok.gif');
+		}
+		$('#this_month_bandwidth').show();
+
+    	// Now data
+    	var n = (down+up) * 100.0 / limitTotal;
+    	var limitPercentage = n.toFixed(0);
+
+    	// 'Today is the $num_days day of your billing month.'
+    	switch (num_days) {
+    	    case 1: num_days = t('1st'); break;
+    	    case 2: num_days = t('2nd'); break;
+    	    case 3: num_days = t('3rd'); break;
+    	    case 21: num_days = t('21st'); break;
+    	    case 22: num_days = t('22nd'); break;
+    	    case 23: num_days = t('23rd'); break;
+    	    case 31: num_days = t('31st'); break;
+    	    default: num_days = num_days + t('th');
+    	}
+    	var endOfMonthBandwidth = (down+up) / nowPercentage;
+
+    	if (limitPercentage > 100) {
+    	    // 'Current extra charges: $overLimit'
+    		var overLimit = ((down+up) - limitTotal) * surchargePerGb;
+    		if (overLimit > surchargeLimit) {
+    			overLimit = surchargeLimit;
+    		}
+
+            // 'Extra charges with $maxTransferPackages of transfer packages (the maximum): $hypotetic_overLimit.'
+    		var hypoteticOverLimit = ((down+up) - (limitTotal+maxTransferPackages)) * surchargePerGb;
+    		if (hypoteticOverLimit > surchargeLimit) {
+    			hypoteticOverLimit = surchargeLimit;
+    		} else if (hypoteticOverLimit < 0) {
+    		    // 'To get no extra charges, you'd need to buy another $extraPackages of extra transfer packages.'
+    		    for (var i=0; i<transferPackages.length; i++) {
+    		        if ((down+up) - (limitTotal+transferPackages[i]) < 0) {
+    		            extraPackages = transferPackages[i];
+    		            extraPackagesPrice = transferPackagesPrices[i];
+    		            break;
+    		        }
+    		    }
+    		}
+        }
+
+    	if (down+up > limitTotal+maxTransferPackages) {
+    	    // You're doomed!
+            var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + '</span>';
+    	} else if (down+up > limitTotal) {
+    	    // All is not lost... Buy transfer packages!
+            //var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + tt('over_limit_tip', [extraPackages.toString(), extraPackagesPrice.toFixed(2)]) + '</span>';
+            var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + '</span>';
+    	} else if (nowBandwidth < 0 && num_days != '0th') {
+    	    // Not on a good path!
+            var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('expected_over_limit_tip', [num_days, endOfMonthBandwidth.toFixed(0)]) + '</span>';
+    	} else {
+			var text = tt('accumulated_daily_surplus', ['neg', nowBandwidth, (nowBandwidth > 0 ? t("Download more stuff!") : '')]);
+    	}
+    	$('#this_month_now_bw_usage').html(text);
+    });
+}
+
+var minute = 60*1000;
+var hour = 60*minute;
+var day = 24*hour;
+
+function loadUsage(callback) {
+	var n = new Date();
+	var now = n.getTime();
+
+	// only refresh if it's been more than 6h since the last update, or if the data for the day before yesterday hasn't been downloaded yet.
+	var lu = new Date(); lu.setTime(last_updated);
+	if (last_updated == 0) {
+    	console.log("Dock restarted, or new install. Updating data...");
+	} else {
+    	console.log("Now: " + now);
+    	console.log("Last Updated: " + last_updated);
+    	if ((now - last_updated) <= 6*hour) {
+        	console.log("Won't update: data is only refreshed every 6 hours.");
+    	}
+    	if ((((now - date_last_updated_data.getTime()) > 2*day) && (now - last_updated) > 15*minute)) {
+    	    console.log("Oh, oh! Wait... The latest data is more than 2 days old... Let's retry every 15 minutes until it works then.");
+    	}
+	}
+	if ((now - last_updated) > 6*hour || (((now - date_last_updated_data.getTime()) > 2*day) && (now - last_updated) > 15*minute)) {
+		if (xml_request != null) {
+			xml_request.abort();
+			xml_request = null;
+		}
+		xml_request = new XMLHttpRequest();
+		xml_request.onload = function(e) { loadUsage2(e, xml_request, callback); }
+		xml_request.open("GET", "https://www.videotron.com/api/1.0/internet/usage/wired/"+userkey+".json?lang="+lang+"&caller=videotron-mac.pommepause.com");
+		xml_request.setRequestHeader("Cache-Control", "no-cache");
+		xml_request.send(null);
+    }
+
+	// Repeat every 20 minutes; will only refresh with the server every 6h anyway
+	setTimeout(loadUsage, 20*minute);
+}
+
+function loadUsage2(e, request, callback) {
+    if (request.status != 200) {
+        load_usage_error = 'HTTP error: ' + request.status;
+        return;
+    }
+    
+	eval('apiResponse = (' + request.response + ');');
+	//console.log(apiResponse);
+	
+	for (var i=0; i<apiResponse.messages.length; i++) {
+	    if (apiResponse.messages[i].severity == 'error') {
+	        if (apiResponse.messages[i].code == 'noUsage') {
+                load_usage_error = 'API call returned no data. Will retry...';
+            	setTimeout(loadUsage, 60);
+	            return;
+	        }
+            load_usage_error = 'API error: ' + apiResponse.messages[i].text;
+        	setTimeout(loadUsage, 20*minute);
+            return;
+	    }
+	}
+	
+	response = new Object();
+	response.periodStartDate = stringToDate(apiResponse.periodStartDate, true);
+	response.periodEndDate = stringToDate(apiResponse.periodEndDate, true);
+	response.usageTimestamp = stringToDate(apiResponse.internetAccounts[0].usageTimestamp, false);
+	
+	response.maxCombinedBytes = apiResponse.internetAccounts[0].maxCombinedBytes;
+	response.uploadedBytes = apiResponse.internetAccounts[0].uploadedBytes;
+	response.downloadedBytes = apiResponse.internetAccounts[0].downloadedBytes;
+	
+	response.packageName = apiResponse.internetAccounts[0].packageName;
+	response.packageCode = apiResponse.internetAccounts[0].packageCode;
+	
+	// @TODO Waiting for the API to report those...
+    surchargeLimit = 99999;
+    surchargePerGb = 1.50;
+	if (response.packageCode) {
+    	if (response.packageCode == 500 || response.packageCode == 521 || response.packageCode == 518 || response.packageCode == 544 || response.packageCode == 1177 || response.packageCode == 1178) {
+    	    surchargeLimit = 50;
+    	    surchargePerGb = 4.50;
+    	}
+	} else {
+    	if (response.packageName == 'High-Speed Internet' || response.packageName == 'Basic Internet' || response.packageName == 'Internet haute vitesse' || response.packageName == 'Internet Intermédiaire') {
+    	    surchargeLimit = 50;
+    	    surchargePerGb = 4.50;
+    	}
+	}
+	response.surchargeLimit = surchargeLimit
+	response.surchargePerGb = surchargePerGb;
+	
+	console.log("Got new usage data from server...");
+	console.log(response);
+
+	// set last_updated to the current time to keep track of the last time a request was posted
+	last_updated = (new Date).getTime();
+	
+	callback({response: response, load_usage_error: load_usage_error});
+}
+
+function stringToDate(string, resetTime) {
+    var d = new Date();
+    if (string.indexOf('T') != -1) {
+        string = string.split('T')[0];
+    }
+    string = string.split('-');
+    var year = string[0];
+    var month = string[1];
+    var day = string[2];
+    d.setYear(year);
+    d.setMonth(month-1);
+    d.setDate(day);
+    if (resetTime) {
+        d.setHours(0);
+        d.setMinutes(0);
+        d.setSeconds(0);
+    }
+    return d;
+}
+
 function changeUI(uiType) {
 	if (uiType == 'small') {
-		$('front').style.background='url(Images/background-small'+t('img_suffix')+'.png) no-repeat top left';
-		$('front').style.width = '178px';
-		$('front').style.height = '180px';
-		$('front').style.paddingTop = '75px';
-		$('flip').style.left = '151px';
-		$('fliprollie').style.left = '151px';
-		$('this_month').style.display = "none";
-		$('this_month_bandwidth').style.display = "none";
-		if (currentDown > 0) {
-			$('this_month_small').style.display = "block";
+		$('#front').css('background', 'url(Images/background-small'+t('img_suffix')+'.png) no-repeat top left');
+		$('#front').css('width', '178px');
+		$('#front').css('height', '180px');
+		$('#front').css('paddingTop', '75px');
+		$('#flip').css('left', '151px');
+		$('#fliprollie').css('left', '151px');
+		$('#this_month').hide();
+		$('#this_month_bandwidth').hide();
+		if (response && response.downloadedBytes > 0) {
+			$('#this_month_small').show();
 		}
 	} else {
-		$('front').style.background='url(Images/background'+t('img_suffix')+'.png) no-repeat top left';
-		$('front').style.width = '408px';
-		$('front').style.height = '130px';
-		$('front').style.paddingTop = '55px';
-		$('flip').style.left = '';
-		$('fliprollie').style.left = '';
-		if (currentDown > 0) {
-			$('this_month').style.display = "block";
-			$('this_month_bandwidth').style.display = "";
+		$('#front').css('background', 'url(Images/background'+t('img_suffix')+'.png) no-repeat top left');
+		$('#front').css('width', '408px');
+		$('#front').css('height', '130px');
+		$('#front').css('paddingTop', '55px');
+		$('#flip').css('left', '');
+		$('#fliprollie').css('left', '');
+		if (response && response.downloadedBytes > 0) {
+			$('#this_month').show();
+			$('#this_month_bandwidth').show();
 		}
-		$('this_month_small').style.display = "none";
+		$('#this_month_small').hide();
 	}
 }
 
@@ -191,66 +364,49 @@ function changeUI(uiType) {
 // showPrefs() is called when the preferences flipper is clicked upon.  It freezes the front of the widget,
 // hides the front div, unhides the back div, and then flips the widget over.
 function showPrefs() {
-	var front = $("front");
-	var back = $("back");
+	var front = $("#front");
+	var back = $("#back");
 	
 	if (window.widget) {
 		widget.prepareForTransition("ToBack");		// freezes the widget so that you can change it without the user noticing
 	}
 	
-	front.style.display="none";		// hide the front
-	back.style.display="block";		// show the back
+	front.hide();		// hide the front
+	back.show();		// show the back
 	
 	if (window.widget) {
 		setTimeout('widget.performTransition();', 0);		// and flip the widget over	
 	}
 
-	$('fliprollie').style.display = 'none';  // clean up the front side - hide the circle behind the info button
+	$('#fliprollie').hide();  // clean up the front side - hide the circle behind the info button
 }
 
 // hidePrefs() is called by the done button on the back side of the widget.  It performs the opposite transition
 // as showPrefs() does.
 function hidePrefs() {
-	var front = $("front");
-	var back = $("back");
-
-	planId = $("plan").selectedIndex;
-	dataTransferPackagesBought = parseInt($("transfer_packages").value);
+	var front = $("#front");
+	var back = $("#back");
 	if (window.widget) {
 		// save preferences
-		widget.setPreferenceForKey(planId, makeKey("planId"));
-		widget.setPreferenceForKey(dataTransferPackagesBought, makeKey("dataTransferPackagesBought"));
-		if (dataTransferPackagesBought > 0) {
-			dataTransferPackagesBoughtWhen = new Date();
-			widget.setPreferenceForKey(dataTransferPackagesBoughtWhen.toString(), makeKey("dataTransferPackagesBoughtWhen"));
-		} else {
-			dataTransferPackagesBoughtWhen = null;
-			widget.setPreferenceForKey(null, makeKey("dataTransferPackagesBoughtWhen"));
-		}
-		widget.setPreferenceForKey($("username").value == 'vlxxxxxx' ? '' : $("username").value, makeKey("username"));
-		widget.setPreferenceForKey($("uiType").value, makeKey("uiType"));
-		widget.setPreferenceForKey($("lang").value, makeKey("lang"));
-		widget.setPreferenceForKey($("color_code_upload").checked, makeKey("colorCodeUpload"));
+		widget.setPreferenceForKey($("#userkey").val() == '1234567890ABCDEF' ? '' : $("#userkey").val(), makeKey("userkey"));
+		widget.setPreferenceForKey($("#uiType").val(), makeKey("uiType"));
+		widget.setPreferenceForKey($("#lang").val(), makeKey("lang"));
+		widget.setPreferenceForKey($("#color_code_upload")[0].checked, makeKey("colorCodeUpload"));
 
 		if (window.widget) {
 			widget.prepareForTransition("ToFront");		// freezes the widget and prepares it for the flip back to the front
 		}
 
-		back.style.display="none";			// hide the back
-		front.style.display="block";		// show the front
+		back.hide();
+		front.show();
 
 		if (window.widget) {
-			setTimeout ('widget.performTransition();', 0);		// and flip the widget back to the front
+			setTimeout('widget.performTransition();', 0);		// and flip the widget back to the front
 		}
 
 		last_updated = 0;
 		show();
-		checkLimits();
-		setNowBarsColor();
 	}
-	limitTotal = parseInt(plans[planId].limit_gb);
-	surchargePerGb = parseFloat(plans[planId].surcharge_per_gb);
-	surchargeLimit = parseFloat(plans[planId].surcharge_limit);
 }
 
 // makeKey makes the widget multi-instance aware
@@ -264,14 +420,7 @@ function makeKey(key) {
 
 // removed is called when the widget is removed from the Dashboard
 function removed() {
-	widget.setPreferenceForKey(null, makeKey("limitType"));
-	widget.setPreferenceForKey(null, makeKey("username"));
-	widget.setPreferenceForKey(null, makeKey("limitTotal"));
-	widget.setPreferenceForKey(null, makeKey("limitUpload"));
-	widget.setPreferenceForKey(null, makeKey("limitDownload"));
-	widget.setPreferenceForKey(null, makeKey("planId"));
-	widget.setPreferenceForKey(null, makeKey("dataTransferPackagesBought"));
-	widget.setPreferenceForKey(null, makeKey("dataTransferPackagesBoughtWhen"));
+	widget.setPreferenceForKey(null, makeKey("userkey"));
 	widget.setPreferenceForKey(null, makeKey("uiType"));
 	widget.setPreferenceForKey(null, makeKey("lang"));
 	widget.setPreferenceForKey(null, makeKey("colorCodeUpload"));
@@ -304,15 +453,15 @@ var animation = {duration:0, starttime:0, to:1.0, now:0.0, from:0.0, firstElemen
 function mousemove(event) {
 	if (!flipShown)	{		// if the preferences flipper is not already showing...
 		if (animation.timer != null) {			// reset the animation timer value, in case a value was left behind
-			clearInterval (animation.timer);
-			animation.timer  = null;
+			clearInterval(animation.timer);
+			animation.timer = null;
 		}
 		
-		var starttime = (new Date).getTime() - 13; 		// set it back one frame
+		var starttime = (new Date).getTime() - 13; 		                        // set it back one frame
 		
 		animation.duration = 500;												// animation time, in ms
 		animation.starttime = starttime;										// specify the start time
-		animation.firstElement = $ ('flip');		// specify the element to fade
+		animation.firstElement = $('#flip')[0];		                            // specify the element to fade
 		animation.timer = setInterval ("animate();", 13);						// set the animation function
 		animation.from = animation.now;											// beginning opacity (not ness. 0)
 		animation.to = 1.0;														// final opacity
@@ -335,7 +484,7 @@ function mouseexit(event) {
 		
 		animation.duration = 500;
 		animation.starttime = starttime;
-		animation.firstElement = $ ('flip');
+		animation.firstElement = $('#flip')[0];
 		animation.timer = setInterval ("animate();", 13);
 		animation.from = animation.now;
 		animation.to = 0.0;
@@ -370,320 +519,42 @@ function computeNextFloat(from, to, ease) {
 
 // these functions are called when the info button itself receives onmouseover and onmouseout events
 function enterflip(event) {
-	$('fliprollie').style.display = 'block';
+	$('#fliprollie').show();
 }
 function exitflip(event) {
-	$('fliprollie').style.display = 'none';
+	$('#fliprollie').hide();
 }
 
-var last_updated = 0;
-var date_last_updated_data = new Date(); date_last_updated_data.setTime(0);
-var xml_request = null;
-
-function show() {
-	setup();
-
-	var n = new Date();
-	var now = n.getTime();
-
-	if (!username || username == null || username.length == 0) {
-		$('loading').style.display='none';
-		$('needs_config').style.display='block';
-		return;
-	}
-
-	// only refresh if the day changed, or it's been more than 24h since the last update, or if the data for the day before yesterday hasn't been downloaded yet.
-	var lu = new Date(); lu.setTime(last_updated);
-	if ((now - last_updated) > 24*60*60*1000 || ((n.getDate() != lu.getDate() || n.getMonth() != lu.getMonth() || n.getYear() != lu.getYear() || (now - date_last_updated_data.getTime()) > 2*24*60*60*1000) && (now - last_updated) > 15*60*1000)) {
-		$("ohnoes").style.display = "none";
-		if ($('this_month').style.display=='none') {
-			if (uiType == 'small') {
-				$('this_month_small_loader').style.display='inline';
-				$('this_month_meter_1_small').style.marginTop = '2px';
-			} else {
-				$('loading').style.top = '30px';
-				$('loading').style.display='block';
-			}
-		} else {
-			$('this_month_loader').style.display='inline';
-			$('this_month_meter_1').style.marginTop = '-5px';
-		}
-		$('needs_config').style.display='none';
-		if (xml_request != null) {
-			xml_request.abort();
-			xml_request = null;
-		}
-		xml_request = new XMLHttpRequest();
-		xml_request.onload = function(e) {load_xml(e, xml_request);}
-		xml_request.overrideMimeType("text/xml");
-		xml_request.open("GET", "http://dataproxy.pommepause.com/videotron_usage-11.php?"+username);
-		xml_request.setRequestHeader("Cache-Control", "no-cache");
-		xml_request.send(null);
-    }
-}
-
-var currentDown = 0;
-var currentUp = 0;
-function load_xml(e, request) {
-	xml_request = null;
-	if (!request.responseXML) {
-		$('ohnoes').innerHTML = t("Oh Noes! There's been an error.<br/>Response is not XML.");
-		$("ohnoes").style.display = "block";
-		$("loading").style.display = "none";
-		$('this_month_small_loader').style.display="none";
-		$('this_month_meter_1_small').style.marginTop = '';
-		$('this_month_loader').style.display="none";
-		$('this_month_meter_1').style.marginTop = '';
-		$('this_month_small').style.display = "none";
-		$('this_month').style.display = "none";
-		$('this_month_bandwidth').style.display = "none";
-		$("last_updated").style.display = "none";
-		last_updated = 0;
-		return;
-	} else {
-		// Get the top level <usage> element 
-		var usage = findChild(request.responseXML, 'usage');
-		if (!usage) {
-			$('ohnoes').innerHTML = t("Oh Noes! There's been an error.<br/>No usage tag in response.");
-			$("ohnoes").style.display = "block";
-			$("loading").style.display = "none";
-			$('this_month_small_loader').style.display="none";
-			$('this_month_meter_1_small').style.marginTop = '';
-			$('this_month_loader').style.display="none";
-			$('this_month_meter_1').style.marginTop = '';
-			$('this_month_small').style.display = "none";
-			$('this_month').style.display = "none";
-			$('this_month_bandwidth').style.display = "none";
-			$("last_updated").style.display = "none";
-			last_updated = 0;
-			return;
-		}
-
-		var new_version = findChild(usage, 'new_version');
-		if (new_version) {
-			new_version_available = true;
-		}
-
-		var error = findChild(usage, 'error');
-		if (error) {
-			$('ohnoes').innerHTML = t(error.firstChild.data);
-			$("ohnoes").style.display = "block";
-			$("loading").style.display = "none";
-			$('this_month_small_loader').style.display="none";
-			$('this_month_meter_1_small').style.marginTop = '';
-			$('this_month_loader').style.display="none";
-			$('this_month_meter_1').style.marginTop = '';
-			$('this_month_small').style.display = "none";
-			$('this_month').style.display = "none";
-			$('this_month_bandwidth').style.display = "none";
-			$("last_updated").style.display = "none";
-			last_updated = 0;
-			return;
-		}
-
-		$("ohnoes").style.display = "none";
-
-		var transferPeriods = new Array;
-		var transferDays = new Array;
-
-		// Get all transfer elements subordinate to the usage element
-		for (var item = usage.firstChild; item != null; item = item.nextSibling) {
-			if (item.nodeName == 'transfer') {
-				var date = findChild(item, 'date');
-				var down = findChild(item, 'download');
-				var up = findChild(item, 'upload');
-				if (date != null && down != null && up != null) {
-					var date_from = findChild(date, 'from');
-					var date_to = findChild(date, 'to');
-					if (date_from != null && date_to != null) {
-						transferPeriods[transferPeriods.length] = {
-							date_from: new Date(Date.parse(date_from.firstChild.data)),
-							date_to: new Date(Date.parse(date_to.firstChild.data)),
-							download: down.firstChild.data,
-							download_units: down.attributes.getNamedItem('unit').value,
-							upload: up.firstChild.data,
-							upload_units: up.attributes.getNamedItem('unit').value
-						};
-					} else {
-						transferDays[transferDays.length] = {
-							date: new Date(Date.parse(date.firstChild.data)),
-							download: down.firstChild.data,
-							download_units: down.attributes.getNamedItem('unit').value,
-							upload: up.firstChild.data,
-							upload_units: up.attributes.getNamedItem('unit').value
-						};
-					}
-				}
-			}
-		}
-		
-		if (dataTransferPackagesBoughtWhen && dataTransferPackagesBoughtWhen > transferPeriods[0]['date_from']) {
-			for (var i=0; i<$('transfer_packages').options.length; i++) {
-				if ($('transfer_packages').options[i].value == dataTransferPackagesBought) {
-					$('transfer_packages').selectedIndex = i;
-					break;
-				}
-			}
-		} else {
-			dataTransferPackagesBought = 0;
-			widget.setPreferenceForKey(dataTransferPackagesBought, makeKey("dataTransferPackagesBought"));
-		}
-
-		// This month
-		$("loading").style.display = "none";
-		$('this_month_small_loader').style.display="none";
-		$('this_month_meter_1_small').style.marginTop = '';
-		$('this_month_loader').style.display="none";
-		$('this_month_meter_1').style.marginTop = '';
-		$("last_updated").style.display = "block";
-		$('needs_config').style.display='none';
-
-		var ids = new Array("this","last","previous");
-		for (i=0; i<3; i++) {
-			var transfer = transferPeriods[i];
-			var id = ids[i];
-			if (i==0) {
-				$(id+'_month_start_small').innerHTML = t('Since')+' '+dateFormat(transfer['date_from'])+'';
-				$(id+'_month_start').innerHTML = '('+t('started')+' '+dateFormat(transfer['date_from'])+')';
-				$(id+'_month_end').innerHTML = dateFormat(transfer['date_to']) + (uiType != "small" ? ' @ 23h59' : '');
-				date_last_updated_data = transfer['date_to'];
-				var this_month_start = transfer['date_from'];
-				var now = transfer['date_to'];
-				now.setDate(now.getDate()+1);
-			} else {
-				$(id+'_month_dates').innerHTML = '('+dateFormat(transfer['date_from']) + 
-					' to ' + dateFormat(transfer['date_to'])+')';
-			}
-			down = numberFormatGB(transfer['download'], transfer['download_units']);
-			up = numberFormatGB(transfer['upload'], transfer['upload_units']);
-			$(id+'_month_down').innerHTML = (down < 1 ? '0' : '') + down.toFixed(2) + ' ' + t("GB");
-			$(id+'_month_up').innerHTML = (up < 1 ? '0' : '') + up.toFixed(2) + ' ' + t("GB");
-			$(id+'_month_total').innerHTML = (down + up < 1 ? '0' : '') + (down + up).toFixed(2) + ' ' + t("GB");
-			
-			if (i==0) {
-				if (uiType == 'small') {
-					$(id+'_month_small').style.display = "block";
-				} else {
-					$(id+'_month').style.display = "block";
-				}
-				currentDown = down;
-				currentUp = up;
-				checkLimits();
-
-				// Now bar(s)
-				var next_month_start = new Date(1900+this_month_start.getYear(), this_month_start.getMonth()+1, this_month_start.getDate());
-				nowPercentage = (now.getTime()-this_month_start.getTime())/(next_month_start.getTime()-this_month_start.getTime());
-				var metersWidth = 361;
-				nowPos = parseInt((nowPercentage*metersWidth).toFixed(0));
-				if (nowPos > (metersWidth)) { nowPos = metersWidth; }
-				$('this_month_now_1').style.left = (21+nowPos)+'px';
-				var metersWidth = 141;
-				nowPosSmall = parseInt((nowPercentage*metersWidth).toFixed(0));
-				if (nowPosSmall > (metersWidth)) { nowPosSmall = metersWidth; }
-				$('this_month_now_1_small').style.left = (21+nowPosSmall)+'px';
-				nowBandwidth = parseFloat((nowPercentage*(limitTotal+dataTransferPackagesBought)-currentDown-currentUp).toFixed(2));
-				setNowBarsColor();
-			}
-		}
-
-		// set last_updated to the current time to keep track of the last time a request was posted
-		last_updated = (new Date).getTime();
-	}
-}
-
-var nowPos;
-var nowBandwidth;
-var nowPercentage
-function setNowBarsColor() {
-	var suffix = "";
-	if (uiType == "small") {
-		suffix = "_small";
-	}
-	if (parseInt($('this_month_meter_1_end').style.left.replace('px','')) <= 1+parseInt(nowPos)) {
-		$('this_month_now_1_img'+suffix).src = 'Images/now'+suffix+'.gif';
-	} else {
-		$('this_month_now_1_img'+suffix).src = 'Images/now_nok'+suffix+'.gif';
-	}
-	if (uiType == "small") {
-		$('this_month_bandwidth_small').style.display = "";
-		$('this_month_now_bw_usage_small').innerHTML = t('Surplus available') + ': <span class="nowbw '+(nowBandwidth > 0 ? 'pos' : 'neg')+'">' + nowBandwidth.toFixed(1) + t('GB') + '</span>';
-	} else {
-		$('this_month_bandwidth').style.display = "";
-		$('this_month_now_bw_usage').innerHTML = t('Accumulated daily surplus') + ': <span class="nowbw '+(nowBandwidth > 0 ? 'pos' : 'neg')+'">' + nowBandwidth + ' ' + t('GB') + '</span>. ' + (nowPercentage < 1 ? (nowBandwidth > 0 ? t("Download more stuff!") : t("Slow down buddy!")) : '');
-	}
-	if (new_version_available) {
-		if (uiType == "small") {
-			$('this_month_bandwidth_small').style.display = "";
-			$('this_month_now_bw_usage_small').innerHTML = '<span style="color:red">' + t('New version available') + '</span>';
-		} else {
-			$('this_month_now_bw_usage').style.display = "";
-			$('this_month_now_bw_usage').innerHTML = '<span style="color:red">' + t('A new version is available.') + '</span>';
-		}
-	}
-}
-
-var k = 0;
-function checkLimits() {
-	$('this_month_now_1').style.display='inline';
-	$('this_month_now_1_small').style.display='inline';
-	if (uiType == "small") {
-		$('this_month_now_1_small').style.top='105px';
-	}
+function checkLimits(currentDown, currentUp) {
+	$('#this_month_now_1').css('display', 'inline');
 
 	// Numbers colors
-	$('this_month_total').style.fontWeight='bold';
-	$('this_month_total').style.color = getLimitColor(currentDown+currentUp, limitTotal+dataTransferPackagesBought);
-	$('this_month_down').style.fontWeight='normal';
-	$('this_month_up').style.fontWeight='normal';
-	$('this_month_down').style.color = "#000000";
-	$('this_month_up').style.color = "#000000";
+	$('#this_month_total').css('fontWeight', 'bold');
+	$('#this_month_total').css('color', getLimitColor(currentDown+currentUp, limitTotal));
+	$('#this_month_down').css('fontWeight', 'normal');
+	$('#this_month_up').css('fontWeight', 'normal');
+	$('#this_month_down').css('color', "#000000");
+	$('#this_month_up').css('color', "#000000");
 	
-	if (currentDown+currentUp > limitTotal+dataTransferPackagesBought) {
-		var overLimit = ((currentDown+currentUp) - (limitTotal+dataTransferPackagesBought)) * surchargePerGb;
-		if (overLimit > surchargeLimit) {
-			overLimit = surchargeLimit;
-		}
-		$('this_month_total').innerHTML = $('this_month_total').innerHTML + ' ('+overLimit.toFixed(0)+'$)';
-	}
-
-	$('this_month_down_small').innerHTML = '<span style="font-weight:bold;color:'+$('this_month_total').style.color+'">'+(currentDown+currentUp).toFixed(2) + '</span>/' + (limitTotal+dataTransferPackagesBought) + 'GB&nbsp;';
-
 	// Meters
 	var metersWidth = 360;
-	$('this_month_meter_1_text').innerHTML = t('Download + Upload');
-	var x = (getLimitPercentage(currentDown+currentUp, limitTotal+dataTransferPackagesBought)*metersWidth/100.0 + 1).toFixed(0);
+	$('#this_month_meter_1_text').html(t('Download + Upload'));
+	var x = (getLimitPercentage(currentDown+currentUp, limitTotal)*metersWidth/100.0 + 1).toFixed(0);
 	if (x > (metersWidth+1)) { x = (metersWidth+1); }
-	$('this_month_meter_1_end').style.width = ((metersWidth+1)-x) + 'px';
-	$('this_month_meter_1_end').style.left = x + 'px';
+	$('#this_month_meter_1_end').css('width', ((metersWidth+1)-x) + 'px');
+	$('#this_month_meter_1_end').css('left', x + 'px');
 
 	if (color_code_upload) {
-		x = (getLimitPercentage(currentUp, limitTotal+dataTransferPackagesBought)*metersWidth/100.0 + 1).toFixed(0);
-		$('this_month_meter_1_start').style.width = x + 'px';
-		$('this_month_meter_1_start').style.left = '1px';
+		x = (getLimitPercentage(currentUp, limitTotal)*metersWidth/100.0 + 1).toFixed(0);
+		$('#this_month_meter_1_start').css('width', x + 'px');
+		$('#this_month_meter_1_start').css('left', '1px');
 	} else {
-		$('this_month_meter_1_start').style.width = '0px';
-	}
-
-	metersWidth = 140;
-	$('this_month_meter_1_text_small').innerHTML = t('Down + Up');
-	var x = (getLimitPercentage(currentDown+currentUp, limitTotal+dataTransferPackagesBought)*metersWidth/100.0 + 1).toFixed(0);
-	if (x > (metersWidth+1)) { x = (metersWidth+1); }
-	$('this_month_meter_1_end_small').style.width = ((metersWidth+1)-x) + 'px';
-	$('this_month_meter_1_end_small').style.left = x + 'px';
-
-	if (color_code_upload) {
-		x = (getLimitPercentage(currentUp, limitTotal+dataTransferPackagesBought)*metersWidth/100.0 + 1).toFixed(0);
-		$('this_month_meter_1_start_small').style.width = x + 'px';
-		$('this_month_meter_1_start_small').style.left = '1px';
-	} else {
-		$('this_month_meter_1_start_small').style.width = '0px';
+		$('#this_month_meter_1_start').css('width', '0px');
 	}
 
 	// Percentage
-	$('this_month_percentage_1').style.left = t('this_month_percentage_1_pos_total');
-	$('this_month_percentage_1').innerHTML = getLimitPercentage(currentDown+currentUp, limitTotal+dataTransferPackagesBought)+'%';
-	$('this_month_percentage_1_small').style.left = t('this_month_percentage_1_small_pos_total');
-	$('this_month_percentage_1_small').innerHTML = getLimitPercentage(currentDown+currentUp, limitTotal+dataTransferPackagesBought)+'%';
+	$('#this_month_percentage_1').css('left', t('this_month_percentage_1_pos_total'));
+	$('#this_month_percentage_1').html(getLimitPercentage(currentDown+currentUp, limitTotal)+'%');
 }
 
 function getLimitPercentage(number, limit) {
@@ -722,20 +593,6 @@ function numberFormatGB(number, unit) {
 	return number;
 }
 
-function $(e) {
-	return document.getElementById(e);
-}
-
-function findChild(element, nodeName) {
-	var child = null;
-	for (child = element.firstChild; child != null; child = child.nextSibling) {
-		if (child.nodeName == nodeName) {
-			break;
-		}
-	}
-	return child;
-}
-
 /***********************************/
 // Internationalization
 /***********************************/
@@ -753,34 +610,43 @@ function t(key) {
     return key;
 }
 
+function tt(key, substitutions) {
+    try {
+        var ret = localizedStrings[lang][key];
+
+        if (ret === undefined) {
+            ret = key;
+		}
+        var i = 1;
+        if (typeof substitutions == 'string') {
+            substitutions = [substitutions];
+        }
+        while (ret.indexOf('$'+i+'$') != -1) {
+            ret = ret.replace('\$' + i + '\$', substitutions[i-1]);
+            i++;
+        }
+        ret = ret.replace('\$\$', '$');
+    } catch (ex) { alert(ex); }
+	return ret;
+}
+
 function translate() {
-	$('needs_config').innerHTML = t("needs_config");
-	$('loading').innerHTML = t("Loading... Please wait.");
-	$('ohnoes').innerHTML = t("Oh Noes! There's been an error.");
-	$('this_month_intro').innerHTML = t("This month");
-	$('this_month_down_suffix').innerHTML = t("download");
-	$('this_month_up_suffix').innerHTML = t("upload");
-	$('last_updated_intro').innerHTML = t("Last updated");
-	$('username_intro').innerHTML = t("Vid&eacute;otron Username");
-	$('plan_intro').innerHTML = t("Type of access");
-	$('transfer_packages_intro').innerHTML = t("Data transfer packages");
-	$('interface_intro').innerHTML = t("Widget interface");
-	$('upload_color_intro').innerHTML = t("Colored Upload");
-	$('lang_intro').innerHTML = t("Language");
-	$('uiType').options[0].text = t("Normal");
-	$('uiType').options[1].text = t("Minimal");
-	if (plans) {
-		for (var i=0; i<plans.length; i++) {
-			$('plan').options[i].text = t(plans[i].name) + ' (' + plans[i].limit_gb + t('GB') + ')';
-		}
-	}
-	if (transferPackages) {
-		for (var i=0; i<transferPackages.length; i++) {
-			$('transfer_packages').options[i].text = $('transfer_packages').options[i].value + ' ' + t('GB');
-		}
-	}
-	if ($('doneButton').innerHTML=='') {
-		createGenericButton($('doneButton'), t('Done'), hidePrefs, 100);
+    $('#where_to_find_user_key').html(t('where_to_find_user_key'));
+	$('#needs_config').html(t("needs_config"));
+	$('#loading').html(t("Loading... Please wait."));
+	$('#ohnoes').html(t("Oh Noes! There's been an error."));
+	$('#this_month_intro').html(t("This month"));
+	$('#this_month_down_suffix').html(t("download"));
+	$('#this_month_up_suffix').html(t("upload"));
+	$('#last_updated_intro').html(t("Last updated"));
+	$('#userkey_intro').html(t("Vid&eacute;otron User Key"));
+	$('#interface_intro').html(t("Widget interface"));
+	$('#upload_color_intro').html(t("Colored Upload"));
+	$('#lang_intro').html(t("Language"));
+	$('#uiType')[0].options[0].text = t("Normal");
+	$('#uiType')[0].options[1].text = t("Minimal");
+	if ($('#doneButton').html() == '') {
+		createGenericButton($('#doneButton')[0], t('Done'), hidePrefs, 100);
 	}
 }
 

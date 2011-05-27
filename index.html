@@ -7,18 +7,19 @@
 		@import "styles.css";
 	</style>
 
-	<script type="text/javascript" src="localizedDefault.js" charset="utf-8" />
-	<script type="text/javascript" src="scripts.js" charset="utf-8" />
-	<script type="text/javascript" src="en.lproj/localizedStrings.js" charset="utf-8" />
-	<script type="text/javascript" src="fr.lproj/localizedStrings.js" charset="utf-8" />
-	<script type="text/javascript" src="file:///System/Library/WidgetResources/button/genericButton.js" charset="utf-8" />
+	<script type="text/javascript" src="localizedDefault.js" charset="utf-8"></script>
+    <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="scripts.js" charset="utf-8"></script>
+	<script type="text/javascript" src="en.lproj/localizedStrings.js" charset="utf-8"></script>
+	<script type="text/javascript" src="fr.lproj/localizedStrings.js" charset="utf-8"></script>
+	<script type="text/javascript" src="file:///System/Library/WidgetResources/button/genericButton.js" charset="utf-8"></script>
 </head>
 <body>
 	<div id="front" onmousemove="mousemove(event)" onmouseout="mouseexit(event)">
 		<div id="loading">Loading... Please wait.</div>
 		<div id="needs_config" class="title">
 			Configuration needed...<br/>
-			Please enter your Vid&eacute;otron username<br/>
+			Please enter your Vid&eacute;otron User Key<br/>
 			in the widget's preferences.
 		</div>
 		<div id="ohnoes" style="display:none">Oh Noes! There's been an error.</div>
@@ -96,31 +97,20 @@
     <div id="back">
 		<div>
 			<table cellspacing="0" cellpadding="0">
-				<tr><td class="inputText">
-					<span id="username_intro">Vid&eacute;otron Username</span>: </td><td><input type="text" id="username" value="vlxxxxxx" size="10" maxlength="8" onclick="if (this.value == 'vlxxxxxx') { this.value = ''; }" /></td>
-					<td style="text-align: right; width: 73px"><span id="lang_intro">Language</span>: </td>
-						<td><select id="lang">
-								<option value="en">English</option>
-								<option value="fr">Fran&ccedil;ais</option>
-							</select></td>
+				<tr><td class="inputText"><span id="userkey_intro">Vid&eacute;otron User Key*</span>: </td>
+				    <td><input type="text" id="userkey" value="1234567890ABCDEF" size="18" maxlength="16" onclick="if (this.value == '1234567890ABCDEF') { this.value = ''; }" /></td>
 				</tr>
 			</table>
 		</div>
 
-		<div id="planDiv">
+		<div>
 			<table cellspacing="0" cellpadding="0">
-				<tr><td class="inputText"><span id="plan_intro">Type of access</span>: </td>
-					<td><select id="plan">
-					</select>
-				</td></tr>
-			</table>
-		</div>
-		<div id="transferPackagesDiv">
-			<table cellspacing="0" cellpadding="0">
-				<tr><td class="inputText"><span id="transfer_packages_intro">Data transfer packages</span>: </td>
-					<td><select id="transfer_packages">
-					</select>
-				</td></tr>
+				<tr><td class="inputText"><span id="lang_intro">Language</span>: </td>
+            			<td><select id="lang">
+            					<option value="en">English</option>
+            					<option value="fr">Fran&ccedil;ais</option>
+            				</select></td>
+				</tr>
 			</table>
 		</div>
 
@@ -140,6 +130,8 @@
 						</td></tr>
 			</table>
 		</div>
+		
+		<div id="where_to_find_user_key"></div>
 
 		<div id="doneButton"></div>
     </div>

@@ -1,6 +1,6 @@
 localizedStrings["fr"] = new Array();
 
-localizedStrings["fr"]["Loading... Please wait."] = "&nbsp;&nbsp;Chargement... Un instant SVP. <img src=\"Images/loader.gif\" class=\"loader\" width=\"16\" height=\"16\" valign=\"middle\" />";
+localizedStrings["fr"]["Loading... Please wait."] = "Chargement... Un instant SVP. <img src=\"Images/loader.gif\" class=\"loader\" width=\"16\" height=\"16\" valign=\"middle\" />";
 localizedStrings["fr"]["needs_config"] = "Configuration requise...<br/>Veuillez entrer votre Cl&eacute; Utilisateur Vid&eacute;otron<br/>dans les pr&eacute;f&eacute;rences du widget.";
 localizedStrings["fr"]["Oh Noes! There's been an error."] = "Oh Noes! Une erreur c'est produite.";
 localizedStrings["fr"]["Download"] = "Aval";
@@ -11,7 +11,7 @@ localizedStrings["fr"]["started"] = "commenc&eacute;";
 localizedStrings["fr"]["download"] = "aval";
 localizedStrings["fr"]["upload"] = "amont";
 localizedStrings["fr"]["Last updated"] = "Derni&egrave;re m&agrave;j";
-localizedStrings["fr"]["Vid&eacute;otron Username"] = "Nom d'usager Vid&eacute;otron";
+localizedStrings["fr"]["Vid&eacute;otron User Key"] = "Cl&eacute; Utilisateur Vid&eacute;otron";
 localizedStrings["fr"]["Bandwidth limit"] = "Limite de transfert";
 localizedStrings["fr"]["Total bandwidth limit"] = "Limite de transfert total";
 localizedStrings["fr"]["Widget interface"] = "Interface du widget";
@@ -28,22 +28,25 @@ localizedStrings["fr"]["this_month_percentage_2_pos_diff"] = "298px";
 localizedStrings["fr"]["this_month_percentage_2_small_pos_diff"] = "82px";
 localizedStrings["fr"]["Done"] = "Enregistrer";
 localizedStrings["fr"]["Language"] = "Langue";
-localizedStrings["fr"]["Invalid username."] = "<br/><br/>Nom d'usager incorrect.<br/><br/>Le nom d'usager doit ressembler à ceci: VLXXXXXX,<br/>dans lequel les X sont tous des lettres.";
-localizedStrings["fr"]["Type of access"] = "Type d'accès";
-localizedStrings["fr"]["Basic"] = "Intermédiaire";
-localizedStrings["fr"]["High-Speed"] = "Haute Vitesse";
-localizedStrings["fr"]["Extreme High-Speed"] = "Haute Vitesse Extrême";
-localizedStrings["fr"]["Extreme Plus High-Speed"] = "Haute Vitesse Extrême Plus";
-localizedStrings["fr"]["Ultimate Speed 30"] = "TGV 30";
-localizedStrings["fr"]["Ultimate Speed 50"] = "TGV 50";
-localizedStrings["fr"]["Business - Ultimate Speed 30"] = "Affaires - TGV 30";
-localizedStrings["fr"]["Business - Ultimate Speed 50"] = "Affaires - TGV 50";
-localizedStrings["fr"]["Accumulated daily surplus"] = "Surplus journalier accumulé";
 localizedStrings["fr"]["Download more stuff!"] = "Laissez-vous aller!";
-localizedStrings["fr"]["Slow down buddy!"] = "Ralentissez un peu!";
-localizedStrings["fr"]["Surplus available"] = "Surplus disponible";
 localizedStrings["fr"]["A new version is available."] = 'Une nouvelle version est disponible. Vous pouvez la télécharger <span onclick="widget.openURL(\'http://www.pommepause.com/videotron/\')" style="text-decoration: underline">ici</span>.';
 localizedStrings["fr"]["New version available"] = '<a href="#" onclick="widget.openURL(\'http://www.pommepause.com/videotron/\')">Nouvelle version disponible</a>';
 localizedStrings["fr"]["GB"] = "Go";
 localizedStrings["fr"]["Colored Upload"] = "Transfert en amont différent sur le graph";
-localizedStrings["fr"]["Data transfer packages"] = "Blocs de consommation supplémentaires achetés";
+
+localizedStrings["fr"]["used_and_quota"] = "Vous avez transféré $1$Go ce mois-ci, alors que votre limite est de $2$Go. ";
+localizedStrings["fr"]["current_extra"] = "Surcharge courante: $1$$$. ";
+localizedStrings["fr"]["over_limit_tip"] = "Pour ne pas être facturé pour cet extra, vous devrez acheter un $1$Go ($2$$$) de blocs de consommation supplémentaires.";
+localizedStrings["fr"]["expected_over_limit_tip"] = "Aujourd'hui est le $1$ jour de votre mois de facturation. À ce rythme, vous aurez transféré $2$Go à la fin du mois.";
+localizedStrings["fr"]["accumulated_daily_surplus"] = "Surplus journalier accumulé: <span class='nowbw $1$'>$2$ Go</span>.$3$";
+
+localizedStrings["fr"]["1st"] = "1er";
+localizedStrings["fr"]["2nd"] = "2e";
+localizedStrings["fr"]["3rd"] = "3e";
+localizedStrings["fr"]["21st"] = "21e";
+localizedStrings["fr"]["22nd"] = "22e";
+localizedStrings["fr"]["23rd"] = "23e";
+localizedStrings["fr"]["31st"] = "31e";
+localizedStrings["fr"]["th"] = "e";
+
+localizedStrings["fr"]["where_to_find_user_key"] = "* Votre Clé Utilisateur Vidéotron est disponible dans l'Espace Client Vidéotron, dans l'onglet <a href='#' onclick='widget.openURL(\"https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=fr&caller=videotron-mac.pommepause.com\")'>Clé Utilisateur</a> de la page <em>Votre Profile</em>.";
