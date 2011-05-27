@@ -1,0 +1,183 @@
+body {
+	font: 10px "Lucida Grande";
+	margin: 0;
+}
+
+div {
+	margin-left: 8px;
+}
+
+#this_month, #this_month_small {
+	font: 12px "Lucida Grande";
+}
+
+.title {
+	font-weight: bold;
+}
+
+.dates {
+	font-weight: normal;
+}
+
+#this_month_bandwidth {
+	position: absolute;
+	bottom: 34px;
+	left: 9px;
+}
+
+#last_updated {
+	position: absolute;
+	bottom: 7px;
+	left: 15px;
+}
+
+input {
+	text-align: center;
+}
+
+.flip {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	width: 13px;
+	height: 13px;
+}
+
+#flip {
+	opacity: 0;
+	background: url(file:///System/Library/WidgetResources/ibutton/black_i.png) no-repeat top left;
+	z-index: 8000;
+}
+
+#fliprollie {
+	display: none;
+	opacity: 0.25;
+	background: url(file:///System/Library/WidgetResources/ibutton/black_rollie.png) no-repeat top left;
+	z-index: 7999;
+
+}
+
+#doneButton {
+	position: absolute;
+	top: 117px;
+	right: 10px;
+}
+#doneButton div {
+	margin-left: 0;
+}
+
+#front {
+	display: block;
+	background: url(Images/background_en.png) no-repeat top left;
+	width: 408px;
+	height: 130px;
+	padding-top: 55px;
+}
+
+#back {
+	color: #FFFFFF;
+	display: none;
+	background: url(Images/background-back.png) no-repeat top left;
+	width: 408px;
+	height: 150px;
+	padding-top: 10px;
+}
+
+#limitTypeDiv, #limitTotalDiv, #limitDifferentDiv {
+	margin-top: 8px;
+}
+
+.inputText {
+	width: 145px;
+}
+
+#needs_config, #loading {
+	display: none;
+	position: relative;
+	text-align: center;
+	top: 30px;
+	left: -10px;
+}
+
+#this_month_meter_2 {
+	position: relative;
+	top: -7px;
+}
+
+.meter_start {
+	background-color: #F0F;
+	position: relative;
+	display: block;
+	height: 10px;
+	top: -11px;
+	z-index: 9;
+}
+
+.meter_end {
+	background-color: #FFFFFF;
+	position: relative;
+	display: block;
+	height: 10px;
+	top: -21px;
+	z-index: 9;
+}
+
+.meter_text {
+	font: 10px "Lucida Grande";
+	color: #000000;
+	position: relative;
+	top: -34px;
+	left: 2px;
+	z-index: 10;
+}
+
+.meter_percentage {
+	top: -34px;
+	z-index: 11;
+}
+
+#this_month_start_small {
+	position: relative;
+	left: 20px;
+}
+
+#this_month_down_small, #this_month_up_small {
+	font: 10px "Lucida Grande";
+	text-align: right;
+	width: 140px;
+}
+
+#this_month_meter_1_small {
+	margin-top: 7px;
+}
+
+#this_month_meter_2_small {
+	margin-top: -12px;
+}
+
+.small.loader {
+	margin-left: 18px;
+}
+
+.loader {
+	margin-bottom: 4px;
+}
+
+#this_month .title, #this_month #this_month_down, #this_month_bandwidth #this_month_now_bw_usage {
+	margin-left: 8px;
+}
+
+span.nowbw {
+	font-weight: bold;
+}
+span.nowbw.pos {
+	color: #01B200;
+}
+span.nowbw.neg {
+	color: #FF0900;
+}
+
+#this_month_bandwidth_small {
+	font: 10px "Lucida Grande";
+	margin-top: -20px;
+}

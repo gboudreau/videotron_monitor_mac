@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Vid&eacute;tron Internet Usage</title>
+	<style type="text/css">
+		@import "styles.css";
+	</style>
+
+	<script type="text/javascript" src="localizedDefault.js" charset="utf-8" />
+	<script type="text/javascript" src="scripts.js" charset="utf-8" />
+	<script type="text/javascript" src="en.lproj/localizedStrings.js" charset="utf-8" />
+	<script type="text/javascript" src="fr.lproj/localizedStrings.js" charset="utf-8" />
+	<script type="text/javascript" src="file:///System/Library/WidgetResources/button/genericButton.js" charset="utf-8" />
+</head>
+<body>
+	<div id="front" onmousemove="mousemove(event)" onmouseout="mouseexit(event)">
+		<div id="loading">Loading... Please wait.</div>
+		<div id="needs_config" class="title">
+			Configuration needed...<br/>
+			Please enter your Vid&eacute;otron username<br/>
+			in the widget's preferences.
+		</div>
+		<div id="ohnoes" style="display:none">Oh Noes! There's been an error.</div>
+
+		<div id="this_month_small" style="display:none">
+			<span id="this_month_start_small" class="title dates"></span>
+			<img id="this_month_small_loader" class="small loader" src="Images/loader.gif" width="16" height="16" style="display: none" valign="middle" /><br/>
+
+			<div id="this_month_meter_1_small">
+				<div id="this_month_down_small"></div>
+				<img src="Images/meter_small.png" width="140" height="10" style="border: 1px solid black" />
+				<span id="this_month_meter_1_start_small" class="meter_start"></span>
+				<span id="this_month_meter_1_end_small" class="meter_end"></span>
+				<span id="this_month_meter_1_text_small" class="meter_text">Download + Upload</span>
+				<span id="this_month_percentage_1_small" class="meter_text meter_percentage" style="left: 61px"></span>
+			</div>
+			<span id="this_month_now_1_small" style="position: absolute; top: 95px; display: none">
+				<img id="this_month_now_1_img_small" src="Images/now.gif" width="7" height="20" />
+			</span>
+			
+			<div id="this_month_bandwidth_small" style="display:none;width:84%"><span id="this_month_now_bw_usage_small"></span></div>
+		</div>
+
+		<div id="this_month" style="display:none">
+			<span class="title">
+				<span id="this_month_intro">This month</span> 
+				<span id="this_month_start" class="dates"></span>
+			</span><br/>
+			<span id="this_month_down"></span> (<span id="this_month_down_suffix">download</span>)
+			+ <span id="this_month_up"></span> (<span id="this_month_up_suffix">upload</span>)
+			= <span id="this_month_total"></span>
+			<img id="this_month_loader" class="loader" src="Images/loader.gif" width="16" height="16" style="display: none" valign="middle" />
+
+			<br/><br/>
+			<div id="this_month_meter_1">
+				<img src="Images/meter.png" width="360" height="10" style="border: 1px solid black" />
+				<span id="this_month_meter_1_start" class="meter_start"></span>
+				<span id="this_month_meter_1_end" class="meter_end"></span>
+				<span id="this_month_meter_1_text" class="meter_text">Download + Upload</span>
+				<span id="this_month_percentage_1" class="meter_text meter_percentage" style="left: 280px"></span>
+			</div>
+			<span id="this_month_now_1" style="position: absolute; top: 96px; display: none">
+				<img id="this_month_now_1_img" src="Images/now.gif" width="7" height="20" />
+			</span>
+		</div>
+		
+		<div id="this_month_bandwidth" style="display:none;width:94%"><span id="this_month_now_bw_usage"></span></div>
+
+		<br/>
+		<div id="last_month" style="display:none">
+			<span class="title">Last month <span id="last_month_dates" class="dates"></span></span><br/>
+			<span id="last_month_down"></span> (download)
+			+ <span id="last_month_up"></span> (upload)
+			= <span id="last_month_total"></span>
+		</div>
+
+		<div id="previous_month" style="display:none">
+			<span class="title">2 month ago <span id="previous_month_dates" class="dates"></span></span><br/>
+			<span id="previous_month_down"></span> (download)
+			+ <span id="previous_month_up"></span> (upload)
+			= <span id="previous_month_total"></span>
+		</div>
+	
+		<br/>
+		<div id="last_updated" style="display:none">
+			<span id="last_updated_intro">Last updated</span>: 
+			<span id="this_month_end">?</span>
+		</div>
+
+		<!-- The following elements comprise the info button, present in the bottom right of thw widget upon mouse over -->
+		<div class="flip" id="fliprollie"></div>
+		<div class="flip" id="flip" onclick="showPrefs(event)" onmouseover="enterflip(event)" onmouseout="exitflip(event)"></div>
+    </div>
+
+    <div id="back">
+		<div>
+			<table cellspacing="0" cellpadding="0">
+				<tr><td class="inputText">
+					<span id="username_intro">Vid&eacute;otron Username</span>: </td><td><input type="text" id="username" value="vlxxxxxx" size="10" maxlength="8" onclick="if (this.value == 'vlxxxxxx') { this.value = ''; }" /></td>
+					<td style="text-align: right; width: 73px"><span id="lang_intro">Language</span>: </td>
+						<td><select id="lang">
+								<option value="en">English</option>
+								<option value="fr">Fran&ccedil;ais</option>
+							</select></td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="planDiv">
+			<table cellspacing="0" cellpadding="0">
+				<tr><td class="inputText"><span id="plan_intro">Type of access</span>: </td>
+					<td><select id="plan">
+					</select>
+				</td></tr>
+			</table>
+		</div>
+		<div id="transferPackagesDiv">
+			<table cellspacing="0" cellpadding="0">
+				<tr><td class="inputText"><span id="transfer_packages_intro">Data transfer packages</span>: </td>
+					<td><select id="transfer_packages">
+					</select>
+				</td></tr>
+			</table>
+		</div>
+
+		<div id="uiDiv">
+			<table cellspacing="0" cellpadding="0">
+				<tr><td class="inputText"><span id="interface_intro">Widget interface</span>: </td>
+					<td><select id="uiType">
+							<option value="normal">Normal</option>
+							<option value="small">Minimal</option>
+						</select></td></tr>
+			</table>
+		</div>
+		<div id="colorDiv">
+			<table cellspacing="0" cellpadding="0">
+				<tr><td class="inputText"><span id="upload_color_intro">Colored Upload</span>: </td>
+					<td><input type="checkbox" id="color_code_upload" value="1" />
+						</td></tr>
+			</table>
+		</div>
+
+		<div id="doneButton"></div>
+    </div>
+</body>
+</html>
