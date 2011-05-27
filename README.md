@@ -27,8 +27,8 @@ This API has been developed by Videotron to provide to third-party developers th
 How to use?
 -----------
 
-Download the widget from (my blog)[Google Chrome WebStore](http://www.pommepause.com/blog/2010/01/mac-widget-videotron-internet-usage-monitor/) and simply double-click it to install.
+Download the widget from [my blog](http://www.pommepause.com/blog/2010/01/mac-widget-videotron-internet-usage-monitor/) and simply double-click it to install.
 
 Then go in the options (click the round i icon in the lower-right corder), and enter your Videotron User Key.
 
-Don't know your Videotron User Key? You can find it in your Videotron Customer Center, in the (User Key)[https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=en&caller=videotron-mac.pommepause.com] tab of the Your Profile page.
+Don't know your Videotron User Key? You can find it in your Videotron Customer Center, in the [User Key](https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=en&caller=videotron-mac.pommepause.com) tab of the Your Profile page.
