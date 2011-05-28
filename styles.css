@@ -181,3 +181,8 @@ span.nowbw.neg {
 	font: 10px "Lucida Grande";
 	margin-top: -20px;
 }
+div.version {
+    float: right;
+    margin-right: 20px;
+    font-weight: bold;
+}

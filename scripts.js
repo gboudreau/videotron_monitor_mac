@@ -658,6 +658,23 @@ function translate() {
 	if ($('#doneButton').html() == '') {
 		createGenericButton($('#doneButton')[0], t('Done'), hidePrefs, 100);
 	}
+	$('#version').html(getCurrentVersion());
+}
+
+function getCurrentVersion() {
+	var request = new XMLHttpRequest();
+	request.open('GET', 'Info.plist', false);
+	request.send();
+	var nodes = request.responseXML.getElementsByTagName('dict')[0].childNodes;
+	var nodeLength = nodes.length;
+	for (var i = 0; i < nodeLength; i++) {
+		if (nodes[i].nodeType == 1 && nodes[i].tagName.toLowerCase() == 'key') {
+			if (nodes[i].firstChild.data == 'CFBundleShortVersionString') {
+				return nodes[i+2].firstChild.data;
+			}
+		}
+	}
+    return "Unknown version";
 }
 
 if (window.widget) {
