@@ -23,6 +23,8 @@ var date_last_updated_data = new Date(); date_last_updated_data.setTime(0);
 var response = null;
 var load_usage_error = null;
 
+var currentVersion = null;
+
 function reloadPrefs() {
     if (window.widget) {
     	userkey = widget.preferenceForKey(makeKey("userkey"));
@@ -658,7 +660,10 @@ function translate() {
 	if ($('#doneButton').html() == '') {
 		createGenericButton($('#doneButton')[0], t('Done'), hidePrefs, 100);
 	}
-	$('#version').html(getCurrentVersion());
+
+	currentVersion = getCurrentVersion();
+	$('#version').html(currentVersion);
+	checkLatestVersion();
 }
 
 function getCurrentVersion() {
@@ -675,6 +680,36 @@ function getCurrentVersion() {
 		}
 	}
     return "Unknown version";
+}
+
+function checkLatestVersion() {
+	var request = new XMLHttpRequest();
+	request.open('GET', 'http://dataproxy.pommepause.com/videotron-widget_latest-version.txt', false);
+	request.send();
+
+    if (request.status != 200) {
+        return;
+    }
+	if (request.responseText) {
+		var response = request.responseText;
+	} else {
+		var response = request.response;
+	}
+	response = response.split("\n");
+	var newVersion = response[0];
+	
+	if (newVersion != currentVersion) {
+	    if (lang == 'fr') {
+	        $('#new_version_avail').css('width', '180px');
+	    } else {
+	        $('#new_version_avail').css('width', '150px');
+	    }
+    	var newVersionDownloadURL = response[1];
+    	$("#new_version_avail").show();
+    	$("#new_version_avail").html(tt('new_version_available', [newVersionDownloadURL, newVersion]));
+	} else {
+	    //console.log("You are running the latest version of the Videotron widget: " + currentVersion);
+	}
 }
 
 if (window.widget) {

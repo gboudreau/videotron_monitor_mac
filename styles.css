@@ -21,13 +21,13 @@ div {
 
 #this_month_bandwidth {
 	position: absolute;
-	bottom: 34px;
+	bottom: 64px;
 	left: 9px;
 }
 
 #last_updated {
 	position: absolute;
-	bottom: 7px;
+	bottom: 37px;
 	left: 15px;
 }
 
@@ -37,7 +37,7 @@ input {
 
 .flip {
 	position: absolute;
-	bottom: 10px;
+	bottom: 40px;
 	right: 10px;
 	width: 13px;
 	height: 13px;
@@ -181,8 +181,20 @@ span.nowbw.neg {
 	font: 10px "Lucida Grande";
 	margin-top: -20px;
 }
-div.version {
+.version {
     float: right;
     margin-right: 20px;
     font-weight: bold;
+}
+#new_version_avail {
+    display: none;
+    position: relative;
+    top: 9px;
+    padding: 7px 1px 7px 7px;
+    margin: 0 auto;
+    background: #FFF;
+    font-weight: bold;
+}
+#new_version_avail a {
+    color: #F00;
 }

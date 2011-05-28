@@ -50,3 +50,5 @@ localizedStrings["en"]["31st"] = "31st";
 localizedStrings["en"]["th"] = "th";
 
 localizedStrings["en"]["where_to_find_user_key"] = "* Find your Videotron User Key in your Videotron Customer Center, in the <a href='#' onclick='widget.openURL(\"https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=en&caller=videotron-mac.pommepause.com\")'>User Key</a> tab of the <em>Your Profile</em> page.";
+
+localizedStrings["en"]["new_version_available"] = '<a href="#" onclick="widget.openURL(\'$1$\')">New version available: $2$</a>';

@@ -50,3 +50,5 @@ localizedStrings["fr"]["31st"] = "31e";
 localizedStrings["fr"]["th"] = "e";
 
 localizedStrings["fr"]["where_to_find_user_key"] = "* Votre Clé Utilisateur Vidéotron est disponible dans l'Espace Client Vidéotron, dans l'onglet <a href='#' onclick='widget.openURL(\"https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=fr&caller=videotron-mac.pommepause.com\")'>Clé Utilisateur</a> de la page <em>Votre Profile</em>.";
+
+localizedStrings["fr"]["new_version_available"] = '<a href="#" onclick="widget.openURL(\'$1$\')">Nouvelle version disponible: $2$</a>';
