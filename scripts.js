@@ -320,7 +320,7 @@ function doneLoading(response) {
 	    // Not on a good path!
         var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('expected_over_limit_tip', [num_days, endOfMonthBandwidth.toFixed(0)]) + '</span>';
 	} else {
-		var text = tt('accumulated_daily_surplus', ['neg', nowBandwidth, (nowBandwidth > 0 ? t("Download more stuff!") : '')]);
+		var text = tt('accumulated_daily_surplus', ['pos', nowBandwidth, (nowBandwidth > 0 ? t("Download more stuff!") : '')]);
 	}
 	$('#this_month_now_bw_usage').html(text);
 }
