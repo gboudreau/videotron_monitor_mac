@@ -247,12 +247,16 @@ function doneLoading(response) {
 	checkLimits(down, up);
 
 	// Now bar(s)
+	console.log('Calcul du surplus:');
 	var nowPercentage = (now.getTime()-this_month_start.getTime())/(next_month_start.getTime()-this_month_start.getTime());
+	console.log('nowPercentage = (' + dateTimeFormat(now) + ' - ' + dateTimeFormat(this_month_start) + ') / (' + dateTimeFormat(next_month_start) + ' - ' + dateTimeFormat(this_month_start) + ') = ' + nowPercentage);
+
 	var metersWidth = 361;
 	var nowPos = parseInt((nowPercentage*metersWidth).toFixed(0));
 	if (nowPos > (metersWidth)) { nowPos = metersWidth; }
 	$('#this_month_now_1').css('left', (29+nowPos)+'px');
 	var nowBandwidth = parseFloat((nowPercentage*limitTotal-down-up).toFixed(2));
+	console.log('surplus = (' + nowPercentage + ' * ' + limitTotal + ') - ' + down + ' - ' + up + ' = ' + nowBandwidth);
 
 	// 'Today is the $num_days day of your billing month.'
 	var num_days = Math.floor((now.getTime()-this_month_start.getTime())/(24*60*60*1000))+1;
