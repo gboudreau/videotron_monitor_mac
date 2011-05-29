@@ -34,11 +34,13 @@ localizedStrings["fr"]["New version available"] = '<a href="#" onclick="widget.o
 localizedStrings["fr"]["GB"] = "Go";
 localizedStrings["fr"]["Colored Upload"] = "Transfert en amont différent sur le graph";
 
-localizedStrings["fr"]["used_and_quota"] = "Vous avez transféré $1$Go ce mois-ci, alors que votre limite est de $2$Go. ";
-localizedStrings["fr"]["current_extra"] = "Surcharge courante: $1$$$. ";
-localizedStrings["fr"]["over_limit_tip"] = "Pour ne pas être facturé pour cet extra, vous devrez acheter un $1$Go ($2$$$) de blocs de consommation supplémentaires.";
+localizedStrings["fr"]["used_and_quota"] = "Vous avez transféré $1$Go / $2$Go ce mois-ci. ";
+localizedStrings["fr"]["current_extra"] = "Surcharge actuelle: $1$$$. ";
+localizedStrings["fr"]["over_limit_tip"] = '$1$Go de <a href="#" onclick="widget.openURL(\'http://www.videotron.com/service/services-internet/services-sur-demande\')">blocs de consommation supplémentaires</a> coûte $2$$$.';
+localizedStrings["fr"]["over_limit_tip_small"] = '<a href="#" onclick="widget.openURL(\'http://www.videotron.com/service/services-internet/services-sur-demande\')">Achetez $1$Go pour $2$$$</a>';
 localizedStrings["fr"]["expected_over_limit_tip"] = "Aujourd'hui est le $1$ jour de votre mois de facturation. À ce rythme, vous aurez transféré $2$Go à la fin du mois.";
-localizedStrings["fr"]["accumulated_daily_surplus"] = "Surplus journalier accumulé: <span class='nowbw $1$'>$2$ Go</span>.$3$";
+localizedStrings["fr"]["accumulated_daily_surplus"] = "Surplus journalier accumulé: <span class='nowbw $1$'>$2$Go</span>.$3$";
+localizedStrings["fr"]["Surplus"] = "Surplus: <span class='nowbw $1$'>$2$Go</span>";
 
 localizedStrings["fr"]["1st"] = "1er";
 localizedStrings["fr"]["2nd"] = "2e";

@@ -36,9 +36,11 @@ localizedStrings["en"]["Colored Upload"] = "Colored Upload";
 
 localizedStrings["en"]["used_and_quota"] = "You have transfered $1$GB this month, of your $2$GB quota. ";
 localizedStrings["en"]["current_extra"] = "Current extra charges: $1$$$. ";
-localizedStrings["en"]["over_limit_tip"] = "To get no extra charges, you'd need to buy another $1$GB ($2$$$) of extra transfer packages.";
+localizedStrings["en"]["over_limit_tip"] = '$1$GB of <a href="#" onclick="widget.openURL(\'http://www.videotron.com/service/internet-services/on-demand-services\')">extra transfer packages</a> would cost $2$$$.';
+localizedStrings["en"]["over_limit_tip_small"] = '<a href="#" onclick="widget.openURL(\'http://www.videotron.com/service/internet-services/on-demand-services\')">Buy $1$GB for $2$$$</a>';
 localizedStrings["en"]["expected_over_limit_tip"] = "Today is the $1$ day of your billing month. At this rate, you'll be at $2$GB at the end of the month.";
-localizedStrings["en"]["accumulated_daily_surplus"] = "Accumulated daily surplus: <span class='nowbw $1$'>$2$ GB</span>.$3$";
+localizedStrings["en"]["accumulated_daily_surplus"] = "Accumulated daily surplus: <span class='nowbw $1$'>$2$GB</span>.$3$";
+localizedStrings["en"]["Surplus"] = "Surplus: <span class='nowbw $1$'>$2$GB</span>";
 
 localizedStrings["en"]["1st"] = "1st";
 localizedStrings["en"]["2nd"] = "2nd";

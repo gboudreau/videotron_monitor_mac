@@ -63,7 +63,7 @@ function reloadPrefs() {
 	}
 
 	translate(); // Maybe language changed; need to re-translate strings if so.
-	changeUI(uiType);	// Maybe UI type changed; need to move/hide/show stuff if so.
+	changeUI();	// Maybe UI type changed; need to move/hide/show stuff if so.
 }
 
 function show() {
@@ -78,8 +78,13 @@ function show() {
 	$("#ohnoes").hide();
 	$('#needs_config').hide();
 	if ($('#this_month').css('display') == 'none') {
-		$('#loading').css('top', '30px');
-		$('#loading').show();
+		if (uiType == 'small') {
+			$('#this_month_small_loader').show();
+			$('#this_month_meter_1_small').css('marginTop', '2px');
+		} else {
+    		$('#loading').css('top', '30px');
+    		$('#loading').show();
+		}
 	} else {
 		$('#this_month_loader').show();
 		$('#this_month_meter_1').css('marginTop', '-5px');
@@ -198,8 +203,11 @@ function doneLoading(response) {
 		$('#ohnoes').html(t(response.load_usage_error));
 		$("#ohnoes").show();
 		$("#loading").hide();
+		$('#this_month_small_loader').hide();
+		$('#this_month_meter_1_small').css('marginTop', '');
 		$('#this_month_loader').hide();
 		$('#this_month_meter_1').css('marginTop', '');
+		$('#this_month_small').hide();
 		$('#this_month').hide();
 		$('#this_month_bandwidth').hide();
 		$("#last_updated").hide();
@@ -210,6 +218,8 @@ function doneLoading(response) {
 	response = response.response;
 
 	if (response == null) {
+		$('#this_month_small_loader').hide();
+		$('#this_month_meter_1_small').css('marginTop', '');
     	$('#this_month_loader').hide();
     	$('#this_month_meter_1').css('marginTop', '');
 		return;
@@ -222,11 +232,14 @@ function doneLoading(response) {
 	$("#ohnoes").hide();
 
 	$("#loading").hide();
+	$('#this_month_small_loader').hide();
+	$('#this_month_meter_1_small').css('marginTop', '');
 	$('#this_month_loader').hide();
 	$('#this_month_meter_1').css('marginTop', '');
 	$("#last_updated").show();
 	$('#needs_config').hide();
 
+	$('#this_month_start_small').html(t('Since')+' '+dateFormat(response.periodStartDate));
 	$('#this_month_start').html('('+t('started')+' '+dateFormat(response.periodStartDate)+')');
 	var last_updated_date = new Date(response.usageTimestamp);
 	$('#this_month_end').html(dateFormat(last_updated_date, true));
@@ -242,7 +255,11 @@ function doneLoading(response) {
 	$('#this_month_up').html((up < 1 ? '0' : '') + up.toFixed(2) + ' ' + t("GB"));
 	$('#this_month_total').html((down + up < 1 ? '0' : '') + (down + up).toFixed(2) + ' ' + t("GB"));
 
-	$('#this_month').show();
+    if (uiType == 'small') {
+    	$('#this_month_small').show();
+    } else {
+    	$('#this_month').show();
+    }
 
 	checkLimits(down, up);
 
@@ -255,6 +272,12 @@ function doneLoading(response) {
 	var nowPos = parseInt((nowPercentage*metersWidth).toFixed(0));
 	if (nowPos > (metersWidth)) { nowPos = metersWidth; }
 	$('#this_month_now_1').css('left', (29+nowPos)+'px');
+
+	var metersWidth = 141;
+	nowPosSmall = parseInt((nowPercentage*metersWidth).toFixed(0));
+	if (nowPosSmall > (metersWidth)) { nowPosSmall = metersWidth; }
+	$('#this_month_now_1_small').css('left', (21+nowPosSmall)+'px');
+
 	var nowBandwidth = parseFloat((nowPercentage*limitTotal-down-up).toFixed(2));
 	console.log('surplus = (' + nowPercentage + ' * ' + limitTotal + ') - ' + down + ' - ' + up + ' = ' + nowBandwidth);
 
@@ -262,12 +285,21 @@ function doneLoading(response) {
 	var num_days = Math.floor((now.getTime()-this_month_start.getTime())/(24*60*60*1000))+1;
 	num_days = parseInt(num_days.toFixed(0));
 
-	if (parseInt($('#this_month_meter_1_end').css('left').replace('px','')) <= 1+parseInt(nowPos) || num_days == 0) {
-		$('#this_month_now_1_img').attr('src', 'Images/now.gif');
-	} else {
-		$('#this_month_now_1_img').attr('src', 'Images/now_nok.gif');
+	var suffix = "";
+	if (uiType == "small") {
+		suffix = "_small";
 	}
-	$('#this_month_bandwidth').show();
+	if (parseInt($('#this_month_meter_1_end').css('left').replace('px','')) <= 1+parseInt(nowPos) || num_days == 0) {
+		$('#this_month_now_1_img'+suffix).attr('src', 'Images/now.gif');
+	} else {
+		$('#this_month_now_1_img'+suffix).attr('src', 'Images/now_nok.gif');
+	}
+
+	if (uiType == "small") {
+	    $('#this_month_bandwidth_small').show();
+	} else {
+	    $('#this_month_bandwidth').show();
+    }
 
 	// Now data
 	var n = (down+up) * 100.0 / limitTotal;
@@ -309,20 +341,36 @@ function doneLoading(response) {
 		}
     }
 
-	if (down+up > limitTotal+maxTransferPackages) {
-	    // You're doomed!
-        var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + '</span>';
-	} else if (down+up > limitTotal) {
-	    // All is not lost... Buy transfer packages!
-        //var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + tt('over_limit_tip', [extraPackages.toString(), extraPackagesPrice.toFixed(2)]) + '</span>';
-        var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + '</span>';
-	} else if (nowBandwidth < 0 && num_days != '0th') {
-	    // Not on a good path!
-        var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('expected_over_limit_tip', [num_days, endOfMonthBandwidth.toFixed(0)]) + '</span>';
-	} else {
-		var text = tt('accumulated_daily_surplus', ['pos', nowBandwidth, (nowBandwidth > 0 ? t("Download more stuff!") : '')]);
-	}
-	$('#this_month_now_bw_usage').html(text);
+    if (uiType == 'small') {
+    	if (down+up > limitTotal+maxTransferPackages) {
+    	    // You're doomed!
+            var text = '';
+    	} else if (down+up > limitTotal) {
+    	    // All is not lost... Buy transfer packages!
+            var text = '<span class="nowbw neg">' + tt('over_limit_tip_small', [extraPackages.toString(), extraPackagesPrice.toFixed(2)]) + '</span>';
+    	} else if (nowBandwidth < 0 && num_days != '0th') {
+    	    // Not on a good path!
+    		var text = tt('Surplus', ['neg', nowBandwidth]);
+    	} else {
+    	    // All is well
+    		var text = tt('Surplus', ['pos', nowBandwidth]);
+    	}
+    } else {
+    	if (down+up > limitTotal+maxTransferPackages) {
+    	    // You're doomed!
+            var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + '</span>';
+    	} else if (down+up > limitTotal) {
+    	    // All is not lost... Buy transfer packages!
+            var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('current_extra', overLimit.toFixed(0)) + tt('over_limit_tip', [extraPackages.toString(), extraPackagesPrice.toFixed(2)]) + '</span>';
+    	} else if (nowBandwidth < 0 && num_days != '0th') {
+    	    // Not on a good path!
+            var text = '<span class="nowbw neg">' + tt('used_and_quota', [(down+up).toFixed(0), limitTotal]) + tt('expected_over_limit_tip', [num_days, endOfMonthBandwidth.toFixed(0)]) + '</span>';
+    	} else {
+    	    // All is well
+    		var text = tt('accumulated_daily_surplus', ['pos', nowBandwidth, (nowBandwidth > 0 ? t("Download more stuff!") : '')]);
+    	}
+    }
+	$('#this_month_now_bw_usage'+suffix).html(text);
 }
 
 function stringToDate(string, resetTime) {
@@ -345,7 +393,7 @@ function stringToDate(string, resetTime) {
     return d;
 }
 
-function changeUI(uiType) {
+function changeUI() {
 	if (uiType == 'small') {
 		$('#front').css('background', 'url(Images/background-small'+t('img_suffix')+'.png) no-repeat top left');
 		$('#front').css('width', '178px');
@@ -542,7 +590,11 @@ function exitflip(event) {
 }
 
 function checkLimits(currentDown, currentUp) {
-	$('#this_month_now_1').css('display', 'inline');
+	$('#this_month_now_1').show();
+	$('#this_month_now_1_small').show();
+	if (uiType == "small") {
+    	$('#this_month_now_1_small').css('top', '105px');
+	}
 
 	// Numbers colors
 	$('#this_month_total').css('fontWeight', 'bold');
@@ -551,6 +603,8 @@ function checkLimits(currentDown, currentUp) {
 	$('#this_month_up').css('fontWeight', 'normal');
 	$('#this_month_down').css('color', "#000000");
 	$('#this_month_up').css('color', "#000000");
+	
+	$('#this_month_down_small').html('<span style="font-weight:bold;color:' + $('this_month_total').css('color') + '">' + (currentDown+currentUp).toFixed(2) + '</span>/' + limitTotal + t('GB') + '&nbsp;');
 	
 	// Meters
 	var metersWidth = 360;
@@ -568,9 +622,26 @@ function checkLimits(currentDown, currentUp) {
 		$('#this_month_meter_1_start').css('width', '0px');
 	}
 
+	metersWidth = 140;
+	$('#this_month_meter_1_text_small').html(t('Down + Up'));
+	var x = (getLimitPercentage(currentDown+currentUp, limitTotal)*metersWidth/100.0 + 1).toFixed(0);
+	if (x > (metersWidth+1)) { x = (metersWidth+1); }
+	$('#this_month_meter_1_end_small').css('width', ((metersWidth+1)-x) + 'px');
+	$('#this_month_meter_1_end_small').css('left', x + 'px');
+
+	if (color_code_upload) {
+		x = (getLimitPercentage(currentUp, limitTotal)*metersWidth/100.0 + 1).toFixed(0);
+		$('#this_month_meter_1_start_small').css('width', x + 'px');
+		$('#this_month_meter_1_start_small').css('left', '1px');
+	} else {
+		$('#this_month_meter_1_start_small').css('width', '0px');
+	}
+
 	// Percentage
 	$('#this_month_percentage_1').css('left', t('this_month_percentage_1_pos_total'));
 	$('#this_month_percentage_1').html(getLimitPercentage(currentDown+currentUp, limitTotal)+'%');
+	$('#this_month_percentage_1_small').css('left', t('this_month_percentage_1_small_pos_total'));
+	$('#this_month_percentage_1_small').html(getLimitPercentage(currentDown+currentUp, limitTotal)+'%');
 }
 
 function getLimitPercentage(number, limit) {

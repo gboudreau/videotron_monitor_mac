@@ -173,7 +173,7 @@ span.nowbw {
 span.nowbw.pos {
 	color: #01B200;
 }
-span.nowbw.neg {
+span.nowbw.neg, span.nowbw.neg a {
 	color: #FF0900;
 }
 
