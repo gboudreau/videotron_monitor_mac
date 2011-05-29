@@ -595,6 +595,11 @@ function dateFormat(d) {
 	return d.getFullYear()+'-'+(d.getMonth()+1 < 10 ? '0'+(d.getMonth()+1) : (d.getMonth()+1))+'-'+(d.getDate() < 10 ? '0'+d.getDate() : d.getDate());
 }
 
+function dateTimeFormat(d) {
+	return d.getFullYear()+'-'+(d.getMonth()+1 < 10 ? '0'+(d.getMonth()+1) : (d.getMonth()+1))+'-'+(d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) +
+	    ' ' + (d.getHours() < 10 ? '0'+d.getHours() : d.getHours()) + ':' + (d.getMinutes() < 10 ? '0'+d.getMinutes() : d.getMinutes()) + ':'  + (d.getSeconds() < 10 ? '0'+d.getSeconds() : d.getSeconds());
+}
+
 var units = new Array("B","KB","MB","GB");
 function numberFormatGB(number, unit) {
 	var go = false;
