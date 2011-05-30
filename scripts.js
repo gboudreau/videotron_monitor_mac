@@ -22,6 +22,8 @@ var last_updated = 0;
 var date_last_updated_data = new Date(); date_last_updated_data.setTime(0);
 var response = null;
 var load_usage_error = null;
+var loadUsageTimer;
+var pastAPIRequests = new Array();
 
 var currentVersion = null;
 
@@ -120,6 +122,21 @@ function loadUsage() {
 			xml_request.abort();
 			xml_request = null;
 		}
+		if (pastAPIRequests.length >= 19) {
+		    var firstReqDate = pastAPIRequests.shift();
+		    var elapsedTime = new Date().getTime() - firstReqDate.getTime();
+		    if (elapsedTime < 15*minute) {
+        	    console.log(pastAPIRequests.length + " API requests were made in the last " + (elapsedTime/60) + " minutes. Maximum is 20 / 15 minutes. Won't send this request, to prevent getting blocked by Videotron.");
+		        load_usage_error = t('throttled');
+		        if (loadUsageTimer) {
+		            clearTimeout(loadUsageTimer);
+		        }
+            	loadUsageTimer = setTimeout(loadUsage, 5*minute);
+            	doneLoading({response: null, load_usage_error: null});
+            	return;
+		    }
+		}
+		pastAPIRequests.push(new Date());
 		xml_request = new XMLHttpRequest();
 		xml_request.onload = function(e) { loadUsage2(e, xml_request); }
 		xml_request.open("GET", "https://www.videotron.com/api/1.0/internet/usage/wired/"+userkey+".json?lang="+lang+"&caller=videotron-mac.pommepause.com");
@@ -130,7 +147,7 @@ function loadUsage() {
     }
 
 	// Repeat every 20 minutes; will only refresh with the server every 6h anyway
-	setTimeout(loadUsage, 20*minute);
+	loadUsageTimer = setTimeout(loadUsage, 20*minute);
 }
 
 function loadUsage2(e, request) {
@@ -139,22 +156,33 @@ function loadUsage2(e, request) {
         return;
     }
     
-	if (request.responseText) {
-		var response = request.responseText;
-	} else {
+	if (request.response) {
 		var response = request.response;
+	} else {
+		var response = request.responseText;
 	}
 	eval('apiResponse = (' + response + ');');
 	
 	for (var i=0; i<apiResponse.messages.length; i++) {
 	    if (apiResponse.messages[i].severity == 'error') {
-	        if (apiResponse.messages[i].code == 'noUsage') {
-                load_usage_error = 'API call returned no data. Will retry...';
-            	setTimeout(loadUsage, 60);
-	            return;
+	        if (loadUsageTimer) {
+	            clearTimeout(loadUsageTimer);
 	        }
-            load_usage_error = 'API error: ' + apiResponse.messages[i].text;
-        	setTimeout(loadUsage, 20*minute);
+	        if (apiResponse.messages[i].code.indexOf('noUsage') != -1 || apiResponse.messages[i].code.indexOf('noProfile.') != -1) {
+                load_usage_error = tt('no_data', 2);
+            	loadUsageTimer = setTimeout(loadUsage, 2*minute);
+	        }
+	        else if (apiResponse.messages[i].code == 'blocked_ip') {
+                load_usage_error = 'API error: ' + apiResponse.messages[i].text;
+            	loadUsageTimer = setTimeout(loadUsage, 24*hour+1*minute);
+	        }
+	        else if (apiResponse.messages[i].code == 'invalidToken' || apiResponse.messages[i].code == 'invalidTokenClass' || apiResponse.messages[i].code == 'noProfile') {
+                load_usage_error = 'API error: ' + apiResponse.messages[i].text;
+	            // No auto-refresh
+	        } else {
+                load_usage_error = 'API error: ' + apiResponse.messages[i].text;
+            	loadUsageTimer = setTimeout(loadUsage, 20*minute);
+	        }
         	doneLoading({response: null, load_usage_error: load_usage_error});
             return;
 	    }
@@ -211,7 +239,6 @@ function doneLoading(response) {
 		$('#this_month').hide();
 		$('#this_month_bandwidth').hide();
 		$("#last_updated").hide();
-		setTimeout(show, 30000);
 		return;
 	}
 	

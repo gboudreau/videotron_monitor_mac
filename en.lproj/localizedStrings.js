@@ -54,3 +54,6 @@ localizedStrings["en"]["th"] = "th";
 localizedStrings["en"]["where_to_find_user_key"] = "* Find your Videotron User Key in your Videotron Customer Center, in the <a href='#' onclick='widget.openURL(\"https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=en&caller=videotron-mac.pommepause.com\")'>User Key</a> tab of the <em>Your Profile</em> page.";
 
 localizedStrings["en"]["new_version_available"] = '<a href="#" onclick="widget.openURL(\'$1$\')">New version available: $2$</a>';
+
+localizedStrings["en"]["no_data"] = 'API call returned no data. Will retry in $1$ minutes...';
+localizedStrings["en"]["throttled"] = "Can't send an API request right now; Videotron would block you for abuse! Wait a couple minutes and retry.";
