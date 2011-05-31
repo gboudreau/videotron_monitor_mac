@@ -513,6 +513,11 @@ function doneLoading(response) {
 
 function stringToDate(string, resetTime) {
     var d = new Date();
+    if (resetTime) {
+        d.setHours(0);
+        d.setMinutes(0);
+        d.setSeconds(0);
+    }
     if (string.indexOf('T') != -1) {
         string = string.split('T')[0];
     }
@@ -521,13 +526,8 @@ function stringToDate(string, resetTime) {
     var month = string[1];
     var day = string[2];
     d.setYear(year);
-    d.setMonth(month-1);
     d.setDate(day);
-    if (resetTime) {
-        d.setHours(0);
-        d.setMinutes(0);
-        d.setSeconds(0);
-    }
+    d.setMonth((month-1));
     return d;
 }
 
