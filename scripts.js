@@ -329,7 +329,7 @@ function loadUsage2(e, request) {
     	    surchargePerGb = 4.50;
     	}
 	}
-	response.surchargeLimit = surchargeLimit
+	response.surchargeLimit = surchargeLimit;
 	response.surchargePerGb = surchargePerGb;
 	
 	calert("Got new usage data from server...");
@@ -931,9 +931,8 @@ function checkLatestVersion() {
     	var newVersionDownloadURL = response[1];
     	$("#new_version_avail").show();
     	$("#new_version_avail").html(tt('new_version_available', [newVersionDownloadURL, newVersion]));
-	} else {
-	    //calert("You are running the latest version of the Videotron widget: " + currentVersion);
-	}
+    }
+	// else { calert("You are running the latest version of the Videotron widget: " + currentVersion); }
 }
 
 function calert(what) {
