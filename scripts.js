@@ -931,7 +931,7 @@ function checkLatestVersion() {
 }
 
 function calert(what) {
-    if (console) {
+    if (typeof console != 'undefined') {
         console.log(what);
     } else {
         alert(what);
