@@ -79,7 +79,7 @@ SuperObject.prototype.css = function(property, value) {
             case 'color':
                 return this[0].style.color;
             default:
-                alert("Error: property " + property + " not implemented in SuperObject.prototype.css(property)");
+                calert("Error: property " + property + " not implemented in SuperObject.prototype.css(property)");
                 return null;
         }
     }
@@ -105,7 +105,7 @@ SuperObject.prototype.css = function(property, value) {
         case 'color':
             this[0].style.color = value; break;
         default:
-            alert("Error: property " + property + " not implemented in SuperObject.prototype.css(property, value)");
+            calert("Error: property " + property + " not implemented in SuperObject.prototype.css(property, value)");
     }
     return this;
 }
@@ -125,7 +125,7 @@ SuperObject.prototype.attr = function(attribute, value) {
             case 'src':
                 return this[0].src;
             default:
-                alert("Error: attribute " + attribute + " not implemented in SuperObject.prototype.attr(attribute)");
+                calert("Error: attribute " + attribute + " not implemented in SuperObject.prototype.attr(attribute)");
                 return null;
         }
     }
@@ -133,7 +133,7 @@ SuperObject.prototype.attr = function(attribute, value) {
         case 'src':
             this[0].src = value; break;
         default:
-            alert("Error: attribute " + attribute + " not implemented in SuperObject.prototype.attr(attribute, value)");
+            calert("Error: attribute " + attribute + " not implemented in SuperObject.prototype.attr(attribute, value)");
     }
     return this;
 }
@@ -217,15 +217,15 @@ function loadUsage() {
 	// only refresh if it's been more than 6h since the last update, or if the data for the day before yesterday hasn't been downloaded yet.
 	var lu = new Date(); lu.setTime(last_updated);
 	if (last_updated == 0) {
-    	alert("Dock restarted, or new install. Updating data...");
+    	calert("Dock restarted, or new install. Updating data...");
 	} else {
-    	alert("Now: " + now);
-    	alert("Last Updated: " + last_updated);
+    	calert("Now: " + now);
+    	calert("Last Updated: " + last_updated);
     	if ((now - last_updated) <= 6*hour) {
-        	alert("Won't update: data is only refreshed every 6 hours.");
+        	calert("Won't update: data is only refreshed every 6 hours.");
     	}
     	if ((((now - date_last_updated_data.getTime()) > 2*day) && (now - last_updated) > 15*minute)) {
-    	    alert("Oh, oh! Wait... The latest data is more than 2 days old... Let's retry every 15 minutes until it works then.");
+    	    calert("Oh, oh! Wait... The latest data is more than 2 days old... Let's retry every 15 minutes until it works then.");
     	}
 	}
 	if ((now - last_updated) > 6*hour || (((now - date_last_updated_data.getTime()) > 2*day) && (now - last_updated) > 15*minute)) {
@@ -237,7 +237,7 @@ function loadUsage() {
 		    var firstReqDate = pastAPIRequests.shift();
 		    var elapsedTime = new Date().getTime() - firstReqDate.getTime();
 		    if (elapsedTime < 15*minute) {
-        	    alert(pastAPIRequests.length + " API requests were made in the last " + (elapsedTime/60) + " minutes. Maximum is 20 / 15 minutes. Won't send this request, to prevent getting blocked by Videotron.");
+        	    calert(pastAPIRequests.length + " API requests were made in the last " + (elapsedTime/60) + " minutes. Maximum is 20 / 15 minutes. Won't send this request, to prevent getting blocked by Videotron.");
 		        load_usage_error = t('throttled');
 		        if (loadUsageTimer) {
 		            clearTimeout(loadUsageTimer);
@@ -328,8 +328,8 @@ function loadUsage2(e, request) {
 	response.surchargeLimit = surchargeLimit
 	response.surchargePerGb = surchargePerGb;
 	
-	alert("Got new usage data from server...");
-	alert(response);
+	calert("Got new usage data from server...");
+	calert(response);
 
 	// set last_updated to the current time to keep track of the last time a request was posted
 	last_updated = (new Date).getTime();
@@ -402,22 +402,22 @@ function doneLoading(response) {
 	checkLimits(down, up);
 
 	// Now bar(s)
-	alert('Calcul du surplus:');
+	calert('Calcul du surplus:');
 	var nowPercentage = (now.getTime()-this_month_start.getTime())/(next_month_start.getTime()-this_month_start.getTime());
-	alert('nowPercentage = (' + dateTimeFormat(now) + ' - ' + dateTimeFormat(this_month_start) + ') / (' + dateTimeFormat(next_month_start) + ' - ' + dateTimeFormat(this_month_start) + ') = ' + nowPercentage);
+	calert('nowPercentage = (' + dateTimeFormat(now) + ' - ' + dateTimeFormat(this_month_start) + ') / (' + dateTimeFormat(next_month_start) + ' - ' + dateTimeFormat(this_month_start) + ') = ' + nowPercentage);
 
 	var metersWidth = 361;
 	var nowPos = parseInt((nowPercentage*metersWidth).toFixed(0));
 	if (nowPos > (metersWidth)) { nowPos = metersWidth; }
 	$('#this_month_now_1').css('left', (29+nowPos)+'px');
 
-	var metersWidth = 141;
+	metersWidth = 141;
 	nowPosSmall = parseInt((nowPercentage*metersWidth).toFixed(0));
 	if (nowPosSmall > (metersWidth)) { nowPosSmall = metersWidth; }
 	$('#this_month_now_1_small').css('left', (21+nowPosSmall)+'px');
 
 	var nowBandwidth = parseFloat((nowPercentage*limitTotal-down-up).toFixed(2));
-	alert('surplus = (' + nowPercentage + ' * ' + limitTotal + ') - ' + down + ' - ' + up + ' = ' + nowBandwidth);
+	calert('surplus = (' + nowPercentage + ' * ' + limitTotal + ') - ' + down + ' - ' + up + ' = ' + nowBandwidth);
 
 	// 'Today is the $num_days day of your billing month.'
 	var num_days = Math.floor((now.getTime()-this_month_start.getTime())/(24*60*60*1000))+1;
@@ -836,7 +836,7 @@ function t(key) {
             ret = key;
 		}
         return ret;
-    } catch (ex) { alert(ex); }
+    } catch (ex) { calert(ex); }
     return key;
 }
 
@@ -856,7 +856,7 @@ function tt(key, substitutions) {
             i++;
         }
         ret = ret.replace('\$\$', '$');
-    } catch (ex) { alert(ex); }
+    } catch (ex) { calert(ex); }
 	return ret;
 }
 
@@ -926,8 +926,16 @@ function checkLatestVersion() {
     	$("#new_version_avail").show();
     	$("#new_version_avail").html(tt('new_version_available', [newVersionDownloadURL, newVersion]));
 	} else {
-	    //alert("You are running the latest version of the Videotron widget: " + currentVersion);
+	    //calert("You are running the latest version of the Videotron widget: " + currentVersion);
 	}
+}
+
+function calert(what) {
+    if (console) {
+        console.log(what);
+    } else {
+        alert(what);
+    }
 }
 
 if (window.widget) {
