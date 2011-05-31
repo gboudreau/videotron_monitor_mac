@@ -432,9 +432,9 @@ function doneLoading(response) {
 		suffix = "_small";
 	}
 	if (parseInt($('#this_month_meter_1_end').css('left').replace('px','')) <= 1+parseInt(nowPos) || num_days == 0) {
-		$('#this_month_now_1_img'+suffix).attr('src', 'Images/now.gif');
+		$('#this_month_now_1_img'+suffix).attr('src', 'Images/now'+suffix+'.gif');
 	} else {
-		$('#this_month_now_1_img'+suffix).attr('src', 'Images/now_nok.gif');
+		$('#this_month_now_1_img'+suffix).attr('src', 'Images/now_nok'+suffix+'.gif');
 	}
 
 	if (uiType == "small") {

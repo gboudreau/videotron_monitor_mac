@@ -141,10 +141,13 @@ input {
 	left: 20px;
 }
 
-#this_month_down_small, #this_month_up_small {
+#this_month_down_small {
 	font: 10px "Lucida Grande";
 	text-align: right;
 	width: 140px;
+	position: relative;
+	right: 3px;
+	top: -1px;
 }
 
 #this_month_meter_1_small {
