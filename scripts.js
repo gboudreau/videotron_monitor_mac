@@ -27,6 +27,117 @@ var pastAPIRequests = new Array();
 
 var currentVersion = null;
 
+// jQuery-like $() function that returns a SuperObject which can be used like a jQuery object: $('#id').val(value).html(value).css('top', '10px').etc()
+function $(selector) {
+    selector = selector.substr(1); // only selector == '#id' is supported here
+    var result = new SuperObject();
+    var elem = document.getElementById(selector);
+	if (elem && elem.parentNode) {
+		result.length = 1;
+		result[0] = elem;
+	}
+	return result;
+}
+SuperObject = function() {
+    length = 0;
+}
+SuperObject.prototype.val = function(value) {
+    if (typeof value == 'undefined') {
+        return this[0].value;
+    }
+    this[0].value = value;
+    return this;
+}
+SuperObject.prototype.html = function(html) {
+    if (typeof html == 'undefined') {
+        return this[0].innerHTML;
+    }
+    this[0].innerHTML = html;
+    return this;
+}
+SuperObject.prototype.css = function(property, value) {
+    if (typeof value == 'undefined') {
+        switch (property) {
+            case 'display':
+                return this[0].style.display;
+            case 'marginTop':
+                return this[0].style.marginTop;
+            case 'paddingTop':
+                return this[0].style.paddingTop;
+            case 'top':
+                return this[0].style.top;
+            case 'left':
+                return this[0].style.left;
+            case 'width':
+                return this[0].style.width;
+            case 'height':
+                return this[0].style.height;
+            case 'background':
+                return this[0].style.background;
+            case 'fontWeight':
+                return this[0].style.fontWeight;
+            case 'color':
+                return this[0].style.color;
+            default:
+                alert("Error: property " + property + " not implemented in SuperObject.prototype.css(property)");
+                return null;
+        }
+    }
+    switch (property) {
+        case 'display':
+            this[0].style.display = value; break;
+        case 'marginTop':
+            this[0].style.marginTop = value; break;
+        case 'paddingTop':
+            this[0].style.paddingTop = value; break;
+        case 'top':
+            this[0].style.top = value; break;
+        case 'left':
+            this[0].style.left = value; break;
+        case 'width':
+            this[0].style.width = value; break;
+        case 'height':
+            this[0].style.height = value; break;
+        case 'background':
+            this[0].style.background = value; break;
+        case 'fontWeight':
+            this[0].style.fontWeight = value; break;
+        case 'color':
+            this[0].style.color = value; break;
+        default:
+            alert("Error: property " + property + " not implemented in SuperObject.prototype.css(property, value)");
+    }
+    return this;
+}
+SuperObject.prototype.show = function(value) {
+    var t = this[0].tagName.toLowerCase();
+    if (t == 'span' || t == 'img') {
+        return this.css('display', 'inline');
+    }
+    return this.css('display', 'block');
+}
+SuperObject.prototype.hide = function(value) {
+    return this.css('display', 'none');
+}
+SuperObject.prototype.attr = function(attribute, value) {
+    if (typeof value == 'undefined') {
+        switch (attribute) {
+            case 'src':
+                return this[0].src;
+            default:
+                alert("Error: attribute " + attribute + " not implemented in SuperObject.prototype.attr(attribute)");
+                return null;
+        }
+    }
+    switch (attribute) {
+        case 'src':
+            this[0].src = value; break;
+        default:
+            alert("Error: attribute " + attribute + " not implemented in SuperObject.prototype.attr(attribute, value)");
+    }
+    return this;
+}
+
 function reloadPrefs() {
     if (window.widget) {
     	userkey = widget.preferenceForKey(makeKey("userkey"));
@@ -106,15 +217,15 @@ function loadUsage() {
 	// only refresh if it's been more than 6h since the last update, or if the data for the day before yesterday hasn't been downloaded yet.
 	var lu = new Date(); lu.setTime(last_updated);
 	if (last_updated == 0) {
-    	console.log("Dock restarted, or new install. Updating data...");
+    	alert("Dock restarted, or new install. Updating data...");
 	} else {
-    	console.log("Now: " + now);
-    	console.log("Last Updated: " + last_updated);
+    	alert("Now: " + now);
+    	alert("Last Updated: " + last_updated);
     	if ((now - last_updated) <= 6*hour) {
-        	console.log("Won't update: data is only refreshed every 6 hours.");
+        	alert("Won't update: data is only refreshed every 6 hours.");
     	}
     	if ((((now - date_last_updated_data.getTime()) > 2*day) && (now - last_updated) > 15*minute)) {
-    	    console.log("Oh, oh! Wait... The latest data is more than 2 days old... Let's retry every 15 minutes until it works then.");
+    	    alert("Oh, oh! Wait... The latest data is more than 2 days old... Let's retry every 15 minutes until it works then.");
     	}
 	}
 	if ((now - last_updated) > 6*hour || (((now - date_last_updated_data.getTime()) > 2*day) && (now - last_updated) > 15*minute)) {
@@ -126,7 +237,7 @@ function loadUsage() {
 		    var firstReqDate = pastAPIRequests.shift();
 		    var elapsedTime = new Date().getTime() - firstReqDate.getTime();
 		    if (elapsedTime < 15*minute) {
-        	    console.log(pastAPIRequests.length + " API requests were made in the last " + (elapsedTime/60) + " minutes. Maximum is 20 / 15 minutes. Won't send this request, to prevent getting blocked by Videotron.");
+        	    alert(pastAPIRequests.length + " API requests were made in the last " + (elapsedTime/60) + " minutes. Maximum is 20 / 15 minutes. Won't send this request, to prevent getting blocked by Videotron.");
 		        load_usage_error = t('throttled');
 		        if (loadUsageTimer) {
 		            clearTimeout(loadUsageTimer);
@@ -217,8 +328,8 @@ function loadUsage2(e, request) {
 	response.surchargeLimit = surchargeLimit
 	response.surchargePerGb = surchargePerGb;
 	
-	console.log("Got new usage data from server...");
-	console.log(response);
+	alert("Got new usage data from server...");
+	alert(response);
 
 	// set last_updated to the current time to keep track of the last time a request was posted
 	last_updated = (new Date).getTime();
@@ -291,9 +402,9 @@ function doneLoading(response) {
 	checkLimits(down, up);
 
 	// Now bar(s)
-	console.log('Calcul du surplus:');
+	alert('Calcul du surplus:');
 	var nowPercentage = (now.getTime()-this_month_start.getTime())/(next_month_start.getTime()-this_month_start.getTime());
-	console.log('nowPercentage = (' + dateTimeFormat(now) + ' - ' + dateTimeFormat(this_month_start) + ') / (' + dateTimeFormat(next_month_start) + ' - ' + dateTimeFormat(this_month_start) + ') = ' + nowPercentage);
+	alert('nowPercentage = (' + dateTimeFormat(now) + ' - ' + dateTimeFormat(this_month_start) + ') / (' + dateTimeFormat(next_month_start) + ' - ' + dateTimeFormat(this_month_start) + ') = ' + nowPercentage);
 
 	var metersWidth = 361;
 	var nowPos = parseInt((nowPercentage*metersWidth).toFixed(0));
@@ -306,7 +417,7 @@ function doneLoading(response) {
 	$('#this_month_now_1_small').css('left', (21+nowPosSmall)+'px');
 
 	var nowBandwidth = parseFloat((nowPercentage*limitTotal-down-up).toFixed(2));
-	console.log('surplus = (' + nowPercentage + ' * ' + limitTotal + ') - ' + down + ' - ' + up + ' = ' + nowBandwidth);
+	alert('surplus = (' + nowPercentage + ' * ' + limitTotal + ') - ' + down + ' - ' + up + ' = ' + nowBandwidth);
 
 	// 'Today is the $num_days day of your billing month.'
 	var num_days = Math.floor((now.getTime()-this_month_start.getTime())/(24*60*60*1000))+1;
@@ -815,7 +926,7 @@ function checkLatestVersion() {
     	$("#new_version_avail").show();
     	$("#new_version_avail").html(tt('new_version_available', [newVersionDownloadURL, newVersion]));
 	} else {
-	    //console.log("You are running the latest version of the Videotron widget: " + currentVersion);
+	    //alert("You are running the latest version of the Videotron widget: " + currentVersion);
 	}
 }
 
