@@ -78,6 +78,8 @@ SuperObject.prototype.css = function(property, value) {
                 return this[0].style.fontWeight;
             case 'color':
                 return this[0].style.color;
+            case 'font-size':
+                return this[0].style.fontSize;
             default:
                 calert("Error: property " + property + " not implemented in SuperObject.prototype.css(property)");
                 return null;
@@ -104,6 +106,8 @@ SuperObject.prototype.css = function(property, value) {
             this[0].style.fontWeight = value; break;
         case 'color':
             this[0].style.color = value; break;
+        case 'font-size':
+            this[0].style.fontSize = value; break;
         default:
             calert("Error: property " + property + " not implemented in SuperObject.prototype.css(property, value)");
     }
@@ -917,10 +921,12 @@ function checkLatestVersion() {
 	var newVersion = response[0];
 	
 	if (newVersion != currentVersion) {
-	    if (lang == 'fr') {
-	        $('#new_version_avail').css('width', '180px');
+	    if (uiType == 'small') {
+	        $('#new_version_avail').css('width', '140px');
+	        $('#new_version_avail').css('font-size', '9px');
 	    } else {
 	        $('#new_version_avail').css('width', '150px');
+	        $('#new_version_avail').css('font-size', '10px');
 	    }
     	var newVersionDownloadURL = response[1];
     	$("#new_version_avail").show();
