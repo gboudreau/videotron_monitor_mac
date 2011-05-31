@@ -631,7 +631,7 @@ function checkLimits(currentDown, currentUp) {
 	$('#this_month_down').css('color', "#000000");
 	$('#this_month_up').css('color', "#000000");
 	
-	$('#this_month_down_small').html('<span style="font-weight:bold;color:' + $('this_month_total').css('color') + '">' + (currentDown+currentUp).toFixed(2) + '</span>/' + limitTotal + t('GB') + '&nbsp;');
+	$('#this_month_down_small').html('<span style="font-weight:bold;color:' + $('#this_month_total').css('color') + '">' + (currentDown+currentUp).toFixed(2) + '</span>/' + limitTotal + t('GB') + '&nbsp;');
 	
 	// Meters
 	var metersWidth = 360;
