@@ -11,9 +11,9 @@
 	<key>MainHTML</key>
 	<string>index.html</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3.6</string>
+	<string>1.3.7</string>
 	<key>CFBundleVersion</key>
-	<string>1.3.6</string>
+	<string>1.3.7</string>
 	<key>Height</key>
 	<integer>210</integer>
 	<key>Width</key>
