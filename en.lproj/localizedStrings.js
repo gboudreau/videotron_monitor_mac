@@ -57,3 +57,5 @@ localizedStrings["en"]["new_version_available"] = '<a href="#" onclick="widget.o
 
 localizedStrings["en"]["no_data"] = 'API call returned no data. Will retry in $1$ minutes...';
 localizedStrings["en"]["throttled"] = "Can't send an API request right now; Videotron would block you for abuse! Wait a couple minutes and retry.";
+
+localizedStrings["en"]["invalid_user_key"] = "Your User Key is invalid. Your key should be a 16 characters string.<br/>You can find it in your Videotron Customer Center, in the <a href='#' onclick='widget.openURL(\"https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=en&caller=videotron-mac.pommepause.com\")'>User Key</a> tab<br/>of the <em>Your Profile</em> page.";

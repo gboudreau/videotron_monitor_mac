@@ -187,10 +187,40 @@ function show() {
 	reloadPrefs();
 	
 	if (!userkey || userkey == null || userkey.length == 0) {
-		$('#loading').hide();
+    	$('#loading').hide();
+		$('#this_month_small_loader').hide();
+		$('#this_month_meter_1_small').css('marginTop', '');
+		$('#this_month_loader').hide();
+		$('#this_month_meter_1').css('marginTop', '');
+		$('#this_month_small').hide();
+		$('#this_month').hide();
+		$('#this_month_bandwidth').hide();
+		$("#last_updated").hide();
+	    $('#needs_config').css('top', '30px');
+    	$('#needs_config').html(t("needs_config"));
 		$('#needs_config').show();
 		return;
 	}
+	
+	if (userkey.length != 16) {
+    	$('#loading').hide();
+		$('#this_month_small_loader').hide();
+		$('#this_month_meter_1_small').css('marginTop', '');
+		$('#this_month_loader').hide();
+		$('#this_month_meter_1').css('marginTop', '');
+		$('#this_month_small').hide();
+		$('#this_month').hide();
+		$('#this_month_bandwidth').hide();
+		$("#last_updated").hide();
+    	$('#needs_config').html(t("invalid_user_key"));
+    	if (uiType == 'small') {
+    	    $('#needs_config').css('top', '-10px');
+    	} else {
+    	    $('#needs_config').css('top', '30px');
+    	}
+    	$('#needs_config').show();
+    	return;
+    }
 
 	$("#ohnoes").hide();
 	$('#needs_config').hide();
@@ -863,7 +893,6 @@ function tt(key, substitutions) {
 
 function translate() {
     $('#where_to_find_user_key').html(t('where_to_find_user_key'));
-	$('#needs_config').html(t("needs_config"));
 	$('#loading').html(t("Loading... Please wait."));
 	$('#ohnoes').html(t("Oh Noes! There's been an error."));
 	$('#this_month_intro').html(t("This month"));
@@ -917,7 +946,7 @@ function checkLatestVersion() {
 	response = response.split("\n");
 	var newVersion = response[0];
 	
-	if (newVersion != currentVersion) {
+	if (newVersion != currentVersion && newVersion != '1.3.7') {
 	    if (uiType == 'small') {
 	        $('#new_version_avail').css('width', '140px');
 	        $('#new_version_avail').css('font-size', '9px');
@@ -929,7 +958,6 @@ function checkLatestVersion() {
     	$("#new_version_avail").show();
     	$("#new_version_avail").html(tt('new_version_available', [newVersionDownloadURL, newVersion]));
     }
-	// else { calert("You are running the latest version of the Videotron widget: " + currentVersion); }
 }
 
 function calert(what) {

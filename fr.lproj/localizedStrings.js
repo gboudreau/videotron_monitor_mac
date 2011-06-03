@@ -57,3 +57,5 @@ localizedStrings["fr"]["new_version_available"] = '<a href="#" onclick="widget.o
 
 localizedStrings["fr"]["no_data"] = "La requête API n'a pas retourné de donnée. Un nouvel essai sera fait dans $1$ minutes...";
 localizedStrings["fr"]["throttled"] = "Videotron va vous bloquer si vous envoyez une autre requête. Attendez quelques minutes avant de réessayer.";
+
+localizedStrings["fr"]["invalid_user_key"] = "Votre Clé Utilisateur est invalide. Votre clé devrait contenir 16 caractères. Vous trouverez votre clé dans l'Espace Client Vidéotron, dans l'onglet<br/><a href='#' onclick='widget.openURL(\"https://www.videotron.com/client/user-management/secur/InitProfile.do?dispatch=initProfile&tab=token&lang=fr&caller=videotron-mac.pommepause.com\")'>Clé Utilisateur</a> de la page <em>Votre Profile</em>.";
