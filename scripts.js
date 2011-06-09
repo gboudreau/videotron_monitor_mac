@@ -414,7 +414,7 @@ function doneLoading(response) {
 	$('#this_month_start_small').html(t('Since')+' '+dateFormat(response.periodStartDate));
 	$('#this_month_start').html('('+t('started')+' '+dateFormat(response.periodStartDate)+')');
 	var last_updated_date = new Date(response.usageTimestamp);
-	$('#this_month_end').html(dateFormat(last_updated_date, true));
+	$('#this_month_end').html(dateTimeFormat(last_updated_date));
 
 	var this_month_start = new Date(response.periodStartDate);
 	var next_month_start = new Date(response.periodEndDate); next_month_start.setDate(next_month_start.getDate()+1);
@@ -547,17 +547,25 @@ function doneLoading(response) {
 
 function stringToDate(string, resetTime) {
     if (string.indexOf('T') != -1) {
-        string = string.split('T')[0];
+        string = string.split('T');
+        dateString = string[0];
+        timeString = string[1];
+    } else {
+        dateString = string;
     }
-    string = string.split('-');
-    var year = string[0];
-    var month = string[1];
-    var day = string[2];
+    if (resetTime || typeof timeString == 'undefined') {
+        timeString = '00:00:00-0000';
+    }
+    dateString = dateString.split('-');
+    timeString = timeString.split('-')[0].split(':');
+    var year = dateString[0];
+    var month = dateString[1];
+    var day = dateString[2];
     var d = new Date(year + '/' + month + '/' + day);
-    if (resetTime) {
-        d.setHours(0);
-        d.setMinutes(0);
-        d.setSeconds(0);
+    d.setHours(timeString[0]);
+    d.setMinutes(timeString[1]);
+    if (typeof timeString[2] != 'undefined') {
+        d.setSeconds(timeString[2]);
     }
     return d;
 }
@@ -837,7 +845,7 @@ function dateFormat(d) {
 
 function dateTimeFormat(d) {
 	return d.getFullYear()+'-'+(d.getMonth()+1 < 10 ? '0'+(d.getMonth()+1) : (d.getMonth()+1))+'-'+(d.getDate() < 10 ? '0'+d.getDate() : d.getDate()) +
-	    ' ' + (d.getHours() < 10 ? '0'+d.getHours() : d.getHours()) + ':' + (d.getMinutes() < 10 ? '0'+d.getMinutes() : d.getMinutes()) + ':'  + (d.getSeconds() < 10 ? '0'+d.getSeconds() : d.getSeconds());
+	    ' ' + (d.getHours() < 10 ? '0'+d.getHours() : d.getHours()) + ':' + (d.getMinutes() < 10 ? '0'+d.getMinutes() : d.getMinutes());
 }
 
 var units = new Array("B","KB","MB","GB");
@@ -946,7 +954,7 @@ function checkLatestVersion() {
 	response = response.split("\n");
 	var newVersion = response[0];
 	
-	if (newVersion != currentVersion && newVersion != '1.3.7') {
+	if (newVersion != currentVersion) {
 	    if (uiType == 'small') {
 	        $('#new_version_avail').css('width', '140px');
 	        $('#new_version_avail').css('font-size', '9px');
